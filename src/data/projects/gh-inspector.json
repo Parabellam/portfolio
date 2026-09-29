@@ -71,12 +71,12 @@
   ],
   "milestones": [
     {
-      "week": "2026-09-21",
-      "text": "Se diseñó y construyó desde cero el bot de auditorías de seguridad semanales. Lee desde Discord qué proyectos revisar, ejecuta la IA en un entorno protegido, controla cuánto de la suscripción consume y abre propuestas de corrección en GitHub. Se reforzó la seguridad tras una revisión interna, se añadió una cola semanal y, el sábado, hizo su primera revisión real de 12 proyectos."
-    },
-    {
       "week": "2026-09-28",
       "text": "El bot pasó a llamarse GH Inspector y sumó dos tareas nuevas: proponer ideas de producto y proponer mejoras de código que se prueban automáticamente antes de enviarse. Ahora recuerda qué propuestas se aceptaron o rechazaron, publica cada resumen en su propio canal y se corrigió la verificación de proyectos en Python."
+    },
+    {
+      "week": "2026-09-21",
+      "text": "Se diseñó y construyó desde cero el bot de auditorías de seguridad semanales. Lee desde Discord qué proyectos revisar, ejecuta la IA en un entorno protegido, controla cuánto de la suscripción consume y abre propuestas de corrección en GitHub. Se reforzó la seguridad tras una revisión interna, se añadió una cola semanal y, el sábado, hizo su primera revisión real de 12 proyectos."
     }
   ]
 }
