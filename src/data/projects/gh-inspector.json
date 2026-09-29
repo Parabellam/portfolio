@@ -1,0 +1,82 @@
+{
+  "source": "GG Forge",
+  "featured": false,
+  "order": 2,
+  "name": "GH Inspector: auditor de código con IA para toda la empresa",
+  "category": "Automatización e IA",
+  "status": "En producción",
+  "pitch": {
+    "general": "Un asistente automático que cada semana revisa todos los proyectos de la empresa, propone ideas, mejora el código y busca fallos de seguridad, dejando cada propuesta lista para que una persona la apruebe.",
+    "tecnica": "Orquestador en TypeScript sobre GitHub Actions que ejecuta Claude Code en modo headless y aislado sobre N repos, con control de presupuesto de uso, verificación en Docker y salida en PRs/issues de GitHub y resúmenes en Discord."
+  },
+  "problem": {
+    "general": "Una empresa pequeña con muchos proyectos no tiene tiempo para revisar cada semana la seguridad y la calidad de todo su código. Las revisiones se posponen y los problemas se acumulan sin que nadie los vea.",
+    "tecnica": "Auditar una docena de repos privados cada semana con un agente de IA implica tres riesgos: que el agente toque credenciales o infraestructura, que consuma toda la cuota de la suscripción y bloquee el trabajo diario, y que proponga cambios que rompen el build. Además, `claude -p` no expone el porcentaje de uso del plan, así que no había forma directa de limitar el gasto."
+  },
+  "solution": {
+    "general": "El bot trabaja solo en horarios de madrugada y en un orden fijo: primero propone ideas, luego mejoras de código que comprueba antes de proponerlas y al final hace la auditoría de seguridad. Nunca aplica nada por su cuenta: abre propuestas que el dueño acepta o rechaza, y recuerda esas decisiones para no repetir lo rechazado. Para decidir qué repos revisar basta con pegar su enlace en un canal de Discord.",
+    "tecnica": "Un único orquestador con tres tareas (ideas, mejoras y seguridad) y ventanas horarias, topes de uso acumulado (60/70/80 % semanal y 80 % de la sesión de 5 horas) y colas semanales persistidas en el propio repo, con arrastre de pendientes y límite de intentos. El uso del plan se lee de la statusline de una sesión interactiva de Claude Code lanzada en un pseudo-terminal, y se vuelve a medir mientras el agente trabaja; si la lectura falla, el sistema se detiene (fail-closed). El agente no tiene shell ni red y solo usa herramientas de archivos limitadas al clon. Corre con un HOME efímero y sin tokens en su entorno, y el orquestador detecta si alguien alteró `.git`. Las mejoras se validan en contenedores Docker sin secretos, comparando cada cambio contra una línea base."
+  },
+  "result": {
+    "general": "En su primera ejecución real revisó 12 proyectos de la empresa y abrió 11 propuestas de corrección de seguridad, de las cuales el dueño ya aceptó 5. Hoy la revisión semanal ocurre sola, sin gastar créditos de API y sin quitarle al dueño la cuota que necesita para su propio trabajo.",
+    "tecnica": "~4.500 líneas de TypeScript en `src/` y ~6.000 de pruebas; `tsc --noEmit` limpio y 431 pruebas Vitest en verde (29 archivos). CI en cada push/PR. Corrida programada del 26-09-2026: 12 repos auditados y 11 PRs en borrador con la etiqueta `security-audit` (5 fusionados, 1 abierto, el resto cerrados tras revisión). Las tareas de ideas y mejoras ya están integradas y probadas en corridas manuales, pero aún no han producido issues ni PRs."
+  },
+  "role": "Diseño, especificación y desarrollo end-to-end (arquitectura, modelo de seguridad del agente, CI/CD y operación). El desarrollo se hizo con un flujo asistido por IA guiado por especificaciones y planes de implementación escritos que están versionados en el repo.",
+  "highlights": [
+    {
+      "general": "Diseñó un sistema para que la IA pueda revisar código privado sin poder acceder a contraseñas ni a la infraestructura de la empresa.",
+      "tecnica": "Sandbox por capas para el agente: sin Bash, WebFetch ni WebSearch; escritura solo dentro del clon y lectura bloqueada en procfs, sysfs y el directorio temporal del sistema. Usa un HOME efímero por ejecución y una allowlist de variables de entorno sin tokens de GitHub ni de Discord. Ignora los `.claude/` y `.mcp.json` del repo auditado y comprueba la integridad de `.git` con huellas antes de usar credenciales. Todo lo que sale del modelo pasa por un sanitizado de secretos y los PRs llevan `[skip ci]` para que no corra CI con secretos sobre código no revisado."
+    },
+    {
+      "general": "Hizo que el bot administre por sí solo el consumo de la suscripción de IA, para que nunca deje al equipo sin cuota.",
+      "tecnica": "Mide el uso semanal y el de la sesión de 5 horas leyendo la statusline de Claude Code en un pseudo-terminal, porque el modo `-p` no lo reporta, con un diagnóstico propio para calibrarlo. Aplica topes acumulados distintos por tarea y reserva margen para seguridad. Estima el gasto y la duración de cada repo con su historial y vuelve a medir durante la ejecución, cada pocos minutos. Si pierde la lectura, se detiene (fail-closed)."
+    },
+    {
+      "general": "Las mejoras de código solo se proponen si se demuestra que no rompen nada.",
+      "tecnica": "Verificación en Docker con `--cap-drop ALL`, `no-new-privileges` y límites de memoria, CPU y PIDs, sobre una copia sin `.git` ni secretos. Detecta automáticamente proyectos Node (npm/pnpm/yarn), Python y Rust, o usa una receta propia por repo. Toma una línea base y solo abre el PR si todos los chequeos que pasaban siguen pasando; el PR incluye una tabla de antes y después. Nunca toca manifiestos, lockfiles, CI ni lógica de autenticación."
+    },
+    {
+      "general": "Todo pasa por una persona: el bot propone y el dueño decide, y el bot aprende de esas decisiones.",
+      "tecnica": "Memoria de propuestas sincronizada con el estado real de issues y PRs en GitHub (fusionado, cerrado como no planeado, etc.), con detección de similitud para no volver a proponer lo rechazado. Tiene modo dry-run, lista de repos gestionada desde Discord con usuarios y organizaciones permitidos, y un resumen en español por canal."
+    },
+    {
+      "general": "Construido con disciplina de ingeniería: cientos de pruebas automáticas y documentación de diseño.",
+      "tecnica": "431 pruebas Vitest, incluidas pruebas del propio workflow de GitHub Actions. Usa inyección de dependencias (spawn, clientes HTTP, verificador) para probar sin red, validación con Zod y cero dependencias de SDK: Discord y GitHub se consumen por REST con reintentos ante 429 y paginación. Tiene specs de diseño y planes de implementación versionados."
+    }
+  ],
+  "skills": [
+    "Automatización de procesos",
+    "Integración de IA generativa (agentes)",
+    "Seguridad de aplicaciones y de la cadena de CI/CD",
+    "Integración de APIs (GitHub, Discord)",
+    "DevOps con GitHub Actions",
+    "Contenedores (Docker)",
+    "Pruebas automatizadas",
+    "Diseño de sistemas y documentación técnica",
+    "Control de costos y cuotas",
+    "Pensamiento de producto (flujo con revisión humana)"
+  ],
+  "stack": [
+    "TypeScript",
+    "Node.js 22",
+    "Claude Code (CLI headless)",
+    "GitHub Actions",
+    "GitHub REST API",
+    "Discord REST API",
+    "Docker",
+    "Git",
+    "Zod",
+    "Vitest",
+    "tsx"
+  ],
+  "milestones": [
+    {
+      "week": "2026-09-21",
+      "text": "Se diseñó y construyó desde cero el bot de auditorías de seguridad semanales. Lee desde Discord qué proyectos revisar, ejecuta la IA en un entorno protegido, controla cuánto de la suscripción consume y abre propuestas de corrección en GitHub. Se reforzó la seguridad tras una revisión interna, se añadió una cola semanal y, el sábado, hizo su primera revisión real de 12 proyectos."
+    },
+    {
+      "week": "2026-09-28",
+      "text": "El bot pasó a llamarse GH Inspector y sumó dos tareas nuevas: proponer ideas de producto y proponer mejoras de código que se prueban automáticamente antes de enviarse. Ahora recuerda qué propuestas se aceptaron o rechazaron, publica cada resumen en su propio canal y se corrigió la verificación de proyectos en Python."
+    }
+  ]
+}

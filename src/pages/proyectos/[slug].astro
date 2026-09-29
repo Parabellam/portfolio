@@ -1,0 +1,242 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Dual from '../../components/Dual.astro';
+import Heatmap from '../../components/Heatmap.astro';
+import { activeDays, formatLongDate, projectDays, relativeActivity, lastActivity } from '../../lib/activity';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const days = projectDays(project.id);
+const total = activeDays(days);
+const timeline = [...data.milestones].sort((a, b) => b.week.localeCompare(a.week));
+---
+
+<Base title={data.name} description={data.pitch.general}>
+  <article class="wrap detail">
+    <a href="/#proyectos" class="back">← Todos los proyectos</a>
+
+    <header class="head">
+      <div class="meta">
+        <span class="badge">{data.category}</span>
+        <span class={`status ${data.status === 'En producción' ? 'live' : ''}`}>{data.status}</span>
+        <span class="muted">{data.source === 'GG Forge' ? 'Proyecto de GG Forge' : 'Proyecto personal'}</span>
+      </div>
+      <h1>{data.name}</h1>
+      <Dual value={data.pitch} as="p" class="lead" />
+      {
+        data.demo && (
+          <a class="btn primary" href={data.demo.url} target="_blank" rel="noopener">
+            {data.demo.label} ↗
+          </a>
+        )
+      }
+    </header>
+
+    <section class="pss" aria-label="Resumen del proyecto">
+      <div class="panel">
+        <h2>El problema</h2>
+        <Dual value={data.problem} as="p" />
+      </div>
+      <div class="panel">
+        <h2>La solución</h2>
+        <Dual value={data.solution} as="p" />
+      </div>
+      <div class="panel">
+        <h2>El resultado</h2>
+        <Dual value={data.result} as="p" />
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Lo más destacado</h2>
+      <ul class="highlights">
+        {data.highlights.map((h) => <Dual value={h} as="li" />)}
+      </ul>
+    </section>
+
+    {
+      data.components.length > 0 && (
+        <section class="section">
+          <h2>Componentes</h2>
+          <div class="components">
+            {data.components.map((c) => (
+              <div class="panel">
+                <h3>{c.name}</h3>
+                <Dual value={{ general: c.general, tecnica: c.tecnica }} as="p" class="muted" />
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section two">
+      <div>
+        <h2>Mi rol</h2>
+        <p>{data.role}</p>
+      </div>
+      <div>
+        <h2 data-v="general">Habilidades que demuestra</h2>
+        <h2 data-v="tecnica">Stack</h2>
+        <ul class="chips" data-v="general">{data.skills.map((s) => <li>{s}</li>)}</ul>
+        <ul class="chips mono" data-v="tecnica">{data.stack.map((s) => <li>{s}</li>)}</ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Actividad</h2>
+        <p class="muted">
+          {total} {total === 1 ? 'día activo' : 'días activos'} en el último año · {relativeActivity(lastActivity(project.id))}
+        </p>
+      </div>
+      <div class="panel">
+        <Heatmap days={days} milestones={data.milestones} weeks={26} label={`${total} días activos en ${data.name}`} />
+      </div>
+    </section>
+
+    {
+      timeline.length > 0 && (
+        <section class="section">
+          <h2>Cómo ha avanzado</h2>
+          <ol class="timeline">
+            {timeline.map((m) => (
+              <li>
+                <span class="when">Semana del {formatLongDate(m.week)}</span>
+                <span>{m.text}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+  </article>
+</Base>
+
+<style>
+  .detail {
+    padding-block: 2rem 1rem;
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 2rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+  }
+  .back:hover {
+    color: var(--ink);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  h1 {
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(1.875rem, 4.5vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .lead {
+    max-width: 62ch;
+    margin: 0 0 1.5rem;
+    font-size: 1.125rem;
+    color: var(--muted);
+  }
+  .pss {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  .pss h2,
+  .components h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+  .pss p,
+  .components p {
+    margin: 0;
+  }
+  .highlights {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+  .highlights :global(li) {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  .highlights :global(li)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .components {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 1rem;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  .two h2 {
+    margin-top: 0;
+  }
+  .timeline {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+    border-left: 2px solid var(--line);
+    list-style: none;
+  }
+  .timeline li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    position: relative;
+  }
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.25rem - 6px);
+    top: 0.45em;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+  }
+  .when {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+  @media (max-width: 760px) {
+    .pss,
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

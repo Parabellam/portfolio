@@ -1,0 +1,53 @@
+<div class="toggle" role="group" aria-label="Nivel de detalle">
+  <button type="button" data-set-view="general">General</button>
+  <button type="button" data-set-view="tecnica">Técnica</button>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-set-view]');
+
+  function sync() {
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setView === root.dataset.view)));
+  }
+
+  buttons.forEach((b) =>
+    b.addEventListener('click', () => {
+      root.dataset.view = b.dataset.setView;
+      try {
+        localStorage.setItem('view', b.dataset.setView!);
+      } catch {}
+      sync();
+    }),
+  );
+  sync();
+</script>
+
+<style>
+  .toggle {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  button {
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 0.3rem 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  button[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>

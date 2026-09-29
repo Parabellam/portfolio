@@ -1,0 +1,72 @@
+---
+import site from '../data/site.json';
+import ViewToggle from '../components/ViewToggle.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = site.headline } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.role}`;
+---
+
+<!doctype html>
+<html lang="es" data-view="general">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+    />
+    <title>{pageTitle}</title>
+    <script is:inline>
+      try {
+        const v = localStorage.getItem('view');
+        if (v === 'tecnica' || v === 'general') document.documentElement.dataset.view = v;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <a href="/" class="brand">{site.name}</a>
+        <nav class="nav" aria-label="Principal">
+          <a href="/#proyectos">Proyectos</a>
+          <a href="/#actividad">Actividad</a>
+          <a href="/#contacto">Contacto</a>
+        </nav>
+        <ViewToggle />
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="footer" id="contacto">
+      <div class="wrap footer-inner">
+        <div>
+          <p class="footer-title">¿Hablamos?</p>
+          <p class="muted">
+            {site.available ? 'Estoy abierto a nuevas oportunidades.' : 'Siempre abierto a conversar.'}
+          </p>
+        </div>
+        <ul class="links">
+          {site.links.email && <li><a href={`mailto:${site.links.email}`}>Email</a></li>}
+          {site.links.linkedin && <li><a href={site.links.linkedin}>LinkedIn</a></li>}
+          {site.links.github && <li><a href={site.links.github}>GitHub</a></li>}
+          {site.links.cv && <li><a href={site.links.cv}>Hoja de vida</a></li>}
+        </ul>
+      </div>
+    </footer>
+    <div id="tip" class="tip" role="tooltip" hidden></div>
+    <script>
+      import '../scripts/tooltip';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Dual from './Dual.astro';
+import { activeDays, lastActivity, projectDays, relativeActivity } from '../lib/activity';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const days = activeDays(projectDays(project.id));
+const last = lastActivity(project.id);
+// En la tarjeta solo cabe la etiqueta corta: "Integración de APIs (GitLab, …)" → "Integración de APIs".
+const short = (s: string) => s.replace(/\s*\(.*\)\s*$/, '');
+---
+
+<article class="card" data-category={data.category}>
+  <div class="card-top">
+    <span class="badge">{data.category}</span>
+    <span class={`status ${data.status === 'En producción' ? 'live' : ''}`}>{data.status}</span>
+  </div>
+  <h3><a href={`/proyectos/${project.id}`} class="stretched">{data.name}</a></h3>
+  <Dual value={data.pitch} as="p" class="pitch" />
+  <ul class="chips" data-v="general">
+    {data.skills.slice(0, 3).map((s) => <li>{short(s)}</li>)}
+  </ul>
+  <ul class="chips mono" data-v="tecnica">
+    {data.stack.slice(0, 5).map((s) => <li>{short(s)}</li>)}
+  </ul>
+  <div class="card-foot">
+    <span>{relativeActivity(last)}</span>
+    {days > 0 && <span>{days} {days === 1 ? 'día activo' : 'días activos'}</span>}
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.3;
+  }
+  .stretched {
+    color: inherit;
+    text-decoration: none;
+  }
+  .stretched::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .stretched:focus-visible {
+    outline: none;
+  }
+  .card:has(.stretched:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .pitch {
+    margin: 0;
+    color: var(--muted);
+    flex: 1;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+</style>

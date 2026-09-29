@@ -1,0 +1,14 @@
+---
+// Muestra el texto "general" o el "técnico" según el selector de vista.
+interface Props {
+  value: { general: string; tecnica: string };
+  as?: 'p' | 'span' | 'li';
+  class?: string;
+}
+
+const { value, as: Tag = 'span', class: className } = Astro.props;
+---
+
+<Tag class={className}>
+  <span data-v="general">{value.general}</span><span data-v="tecnica">{value.tecnica}</span>
+</Tag>

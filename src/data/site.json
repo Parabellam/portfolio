@@ -1,0 +1,14 @@
+{
+  "name": "Stiven Ruiz",
+  "role": "Desarrollador de software",
+  "location": "Colombia",
+  "available": true,
+  "headline": "Construyo herramientas que automatizan el trabajo repetitivo de los equipos.",
+  "bio": "Diseño y desarrollo proyectos de principio a fin: desde la idea y la arquitectura hasta el despliegue y la operación. Me enfoco en automatización, bots, infraestructura y en usar IA donde de verdad ahorra tiempo.",
+  "links": {
+    "email": "stiven.ruiz.991031@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/stiven-ruiz-0ba55a297",
+    "github": "https://github.com/Parabellam",
+    "cv": ""
+  }
+}

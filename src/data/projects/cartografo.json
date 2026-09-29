@@ -1,0 +1,85 @@
+{
+  "source": "GG Forge",
+  "featured": false,
+  "order": 3,
+  "name": "Cartógrafo: de la conversación en Discord a la especificación técnica",
+  "category": "Automatización e IA",
+  "status": "En producción",
+  "pitch": {
+    "general": "Un asistente de Discord que lee lo que el equipo conversa sobre un producto y lo convierte, solo, en un documento de requisitos ordenado, con cada punto enlazado al mensaje donde se dijo.",
+    "tecnica": "Bot de Discord en TypeScript que aplica Spec-Driven Development a la inversa (conversación → spec): un pipeline MAP/REDUCE con LLMs extrae afirmaciones de hilos de foro, las reconcilia en una spec append-only con IDs estables y requisitos EARS validados, y la publica en Discord y GitHub con aprobación por botón."
+  },
+  "problem": {
+    "general": "Los fundadores discuten ideas, decisiones y problemas del producto en canales de Discord. Esa información queda dispersa, nadie la pasa a limpio y con el tiempo se pierde o se contradice.",
+    "tecnica": "El conocimiento de producto vive en cientos de mensajes no estructurados repartidos en hilos que Discord auto-archiva. Las herramientas de SDD (spec-kit, hello-sdd) asumen que un humano escribe la spec antes de programar; reconstruirla a partir de conversación, de forma trazable, incremental y sin que el modelo invente requisitos, no tiene solución estándar."
+  },
+  "solution": {
+    "general": "El bot revisa periódicamente los foros de cada producto, detecta historias de usuario, requisitos, decisiones, riesgos y preguntas abiertas, y redacta un documento vivo que publica en el propio Discord y guarda en GitHub. Nada entra sin enlace a su mensaje de origen, los puntos nunca se renumeran, y cuando dos personas se contradicen el bot lo señala en vez de decidir. Un responsable aprueba cada versión con un botón.",
+    "tecnica": "Dos procesos: un gateway siempre conectado (comandos slash /sdd, botones de aprobación, disparo por actividad) y un worker que ejecuta el pipeline como proceso hijo. Pipeline: descubrimiento (la jerarquía categoría → foro → publicación de Discord es la configuración), ingesta con cursores por hilo basados en snowflakes, prefiltro determinista, MAP con Claude Haiku por ventanas acotadas, REDUCE con Claude Opus sobre afirmaciones estructuradas (nunca mensajes crudos), validación en dos fases (EARS por regex, citas verificadas contra los message_ids enviados, alcance de canales, frontmatter YAML), reconciliación append-only y outbox transaccional en SQLite con entrega idempotente a Discord y a GitHub (Octokit). Cadena de proveedores LLM configurable con respaldo (Anthropic, Groq, Gemini, Mistral, OpenRouter, Together, Hugging Face y el CLI de Claude Code en sandbox), reintento con backoff y tope de presupuesto en USD."
+  },
+  "result": {
+    "general": "El equipo obtiene una especificación del producto siempre actualizada, revisable y aprobada en Discord, sin que nadie tenga que redactarla a mano. El repositorio contiene ya varias versiones aprobadas de la especificación de un producto piloto generadas por el propio bot.",
+    "tecnica": "MVP desplegado en Railway (Railpack/Nixpacks con volumen persistente) que ha producido y commiteado versiones v0 a v3 de una spec real con historias de usuario, requisitos EARS, ADRs y preguntas abiertas trazables. ~7.000 líneas de TypeScript de producción acompañadas de ~6.400 líneas de tests (37 ficheros Vitest, del orden de 490 casos) que se ejecutan sin red; `npm run build` es comprobación de tipos estricta."
+  },
+  "role": "Diseño y desarrollo end-to-end: documento de diseño, plan de implementación, arquitectura, código, tests, despliegue en Railway y operación del bot en el servidor de GG Forge. Desarrollo asistido por agentes de IA (Claude Code) con revisión propia.",
+  "highlights": [
+    {
+      "general": "Cada punto del documento enlaza al mensaje exacto donde se dijo; lo que no se puede rastrear no se publica. Así se evita que la IA se invente requisitos.",
+      "tecnica": "Trazabilidad obligatoria como defensa anti-alucinación: los message_ids citados por el modelo se validan contra los de la ventana enviada, las afirmaciones con fuentes inventadas o de canales fuera de alcance se descartan y se cuentan en el informe, y un descarte masivo (>1 elemento y >30%) aborta la publicación."
+    },
+    {
+      "general": "Si algo falla a mitad (la IA, Discord o GitHub), no se pierde trabajo ni se paga dos veces: el bot reintenta lo pendiente en la siguiente ejecución.",
+      "tecnica": "Outbox transaccional en SQLite: reconciliación, cursores, render y estado se confirman en una única transacción por producto y la entrega a Discord/Git es un paso idempotente posterior. Cerrojo con arrendamiento (latido) entre procesos, cursores que solo avanzan hasta la última ventana procesada con éxito y detección explícita del intent MessageContent desactivado para no marcar como leído un histórico vacío."
+    },
+    {
+      "general": "No depende de un único proveedor de IA: si uno se cae o se queda sin saldo, pasa automáticamente al siguiente y controla el gasto con un presupuesto máximo.",
+      "tecnica": "Cadena de proveedores configurable desde Discord (Anthropic con salida estructurada nativa, varios proveedores compatibles con la API de OpenAI validados con Zod, y el CLI de Claude Code aislado sin herramientas, sin MCP, con HOME temporal y sin secretos en su entorno), backoff exponencial sobre la cadena completa, streaming en la síntesis y contador de coste con corte duro."
+    },
+    {
+      "general": "Añadir un producto nuevo es tan simple como crear un foro en Discord: no hay que tocar código ni archivos de configuración.",
+      "tecnica": "La estructura de Discord es el modelo de datos: el producto se identifica por el channel_id del foro (renombrar o mover de categoría no rompe su identidad), las secciones se reconocen por título normalizado con alias y degradación segura, y toda la operación se gestiona con comandos slash; en .env solo hay secretos."
+    },
+    {
+      "general": "Los requisitos se escriben en un formato estándar y comparable, con identificadores que nunca cambian, lo que permite ver con claridad qué cambió entre versiones.",
+      "tecnica": "Requisitos funcionales en notación EARS en español (cinco patrones validables por regex), IDs estables tipo US-001/RF-001 nunca renumerados, elementos retirados marcados como obsoletos con lápida, conflictos expuestos sin arbitrar y aprobación ligada al hash del markdown efectivamente publicado."
+    }
+  ],
+  "skills": [
+    "Automatización de procesos con IA",
+    "Integración de APIs (Discord, Anthropic, OpenAI-compatibles, GitHub)",
+    "Diseño de arquitectura y documentación técnica",
+    "Ingeniería de prompts y salidas estructuradas",
+    "Control de costes en servicios de IA",
+    "Tolerancia a fallos e idempotencia",
+    "Testing automatizado",
+    "Despliegue en la nube",
+    "Seguridad y aislamiento de procesos",
+    "Gestión de requisitos (Spec-Driven Development, EARS)"
+  ],
+  "stack": [
+    "TypeScript",
+    "Node.js 22",
+    "discord.js",
+    "Anthropic SDK (Claude Haiku / Opus)",
+    "OpenAI SDK (Groq, Gemini, Mistral, OpenRouter, Together, Hugging Face)",
+    "Claude Code CLI",
+    "SQLite (better-sqlite3)",
+    "Octokit (GitHub API)",
+    "Zod",
+    "unpdf",
+    "Vitest",
+    "tsx",
+    "Railway (Railpack / Nixpacks)",
+    "systemd"
+  ],
+  "milestones": [
+    {
+      "week": "2026-09-14",
+      "text": "Diseño y construcción completa del bot en una semana: documento de diseño, plan de trabajo y la cadena que lee Discord, extrae requisitos con IA, los valida y publica el documento con botón de aprobación. Primer despliegue en la nube, respaldo automático con otras IAs, comando para crear foros de producto a partir de una plantilla y primeras especificaciones reales generadas y aprobadas."
+    },
+    {
+      "week": "2026-09-21",
+      "text": "Uso real y mejoras: lectura de documentos adjuntos (texto y PDF), ejecución automática unas horas después de la actividad del equipo, control total del orden de proveedores de IA, opción de usar la suscripción de Claude en lugar de pagar por uso, nuevas versiones aprobadas de la especificación piloto y traspaso del proyecto a la organización GG Forge."
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "source": "Personal",
+  "featured": true,
+  "order": 1,
+  "name": "DevOps Hub: centro de control de despliegues, clústeres y equipos",
+  "category": "Infraestructura y DevOps",
+  "status": "En producción",
+  "pitch": {
+    "general": "Una aplicación de escritorio y móvil que reúne en un solo lugar todo lo que un equipo de desarrollo necesita para publicar cambios, vigilar sus sistemas y organizar su trabajo, sin tener que saltar entre diez herramientas distintas.",
+    "tecnica": "Monorepo full-stack en TypeScript (React 19 + Tauri 2 + dos backends NestJS 11) que orquesta GitLab, Kubernetes/GKE, MongoDB, Docker y Google Cloud Monitoring, con un módulo de gestión de equipos sobre PostgreSQL, RBAC por permisos y asistente de IA multi-proveedor."
+  },
+  "problem": {
+    "general": "Publicar una nueva versión de software en una empresa con varias plataformas de clientes implicaba muchos pasos manuales: revisar y aprobar cambios, lanzar despliegues, comprobar que los servidores siguieran sanos, sacar copias de seguridad y montar el entorno local de cada proyecto. Cada paso vivía en una herramienta diferente y un error (por ejemplo, actuar sobre el entorno equivocado) podía afectar a producción. Además, las tareas y tickets del equipo se seguían por separado, sin relación con lo que realmente se desplegaba.",
+    "tecnica": "El flujo de release dependía de operaciones manuales en GitLab (merge, tags con keywords de CI/CD, bump de versiones), kubectl contra múltiples clústeres GKE con contexto global compartido, backups/restores de MongoDB dentro de pods y levantamiento local de decenas de microservicios con Docker Compose. No había trazabilidad ticket → MR → despliegue ni control de acceso centralizado, y el riesgo de ejecutar comandos destructivos en el clúster incorrecto era real."
+  },
+  "solution": {
+    "general": "Diseñé y construí una aplicación que automatiza el ciclo completo: revisar y fusionar cambios, desplegar con un clic, ver en vivo el estado y los registros de los servidores, hacer copias de seguridad y restaurarlas, y levantar el entorno de trabajo local. Tiene dos modos: uno técnico para desarrolladores y otro de gestión para todo el equipo (tareas, tickets, operaciones por fases, inventario, usuarios), con acceso según el rol de cada persona. Funciona como programa instalable en Windows y Linux, se actualiza sola y también se puede usar desde el móvil. Incluye un asistente de IA que responde dudas sobre la herramienta y redacta descripciones de cambios.",
+    "tecnica": "Arquitectura de tres piezas: (1) frontend React + Vite con patrón ViewModel (páginas presentacionales, lógica en hooks, HTTP solo en servicios), empaquetado como app Tauri 2 con system tray, auto-update firmado con Ed25519 y el backend de operaciones embebido como sidecar compilado con pkg, y también como PWA; (2) backend 'dev' NestJS sin BD que envuelve GitLab (gitbeaker + REST fallback, GitHub vía Octokit), kubectl/GKE, MongoDB, Docker Compose, Google Cloud Monitoring y MQTT, con streaming por Server-Sent Events; (3) backend 'estándar' NestJS + PostgreSQL/TypeORM con JWT, RBAC granular por permiso ('modulo:accion'), activity logs obligatorios, paginación server-side, más de 20 módulos de negocio y un DevProxy autenticado que permite usar el backend local desde el móvil vía túnel. Decisiones clave: las operaciones Git de merge/deploy nunca tocan la copia de trabajo del usuario (commit-tree + worktrees temporales y lock por repo), y toda operación destructiva en Kubernetes exige clúster explícito y fija el --context en cada comando."
+  },
+  "result": {
+    "general": "Un proceso que antes exigía varias herramientas y mucho cuidado manual se hace ahora desde una sola pantalla, con confirmaciones, historial de quién hizo qué y protecciones para no tocar producción por error. El equipo puede seguir sus tareas y tickets y ver cuáles ya llegaron a cada plataforma.",
+    "tecnica": "Más de 430 commits en ~10 meses, ~400 archivos TS/TSX (frontend ~190, backend operaciones ~60, backend estándar ~160) y un shell Rust; 35 tags de versión con pipelines de GitHub Actions por keyword (instaladores Windows .exe/.msi y Linux .deb/.AppImage publicados en Releases; deploy del backend vía API GraphQL de Railway); PWA en Cloudflare Pages; suite de pruebas de seguridad aislada (stubs de kubectl/gcloud/docker/git y repos sandbox) que el repo documenta con 259 casos; auditoría de seguridad documentada (inyección de comandos, SSRF, escalada de privilegios) con correcciones versionadas."
+  },
+  "role": "Diseño y desarrollo end-to-end en solitario: arquitectura, frontend, dos backends, shell de escritorio en Rust, CI/CD, despliegue en la nube, auditoría de seguridad y documentación técnica.",
+  "highlights": [
+    {
+      "general": "Despliegues con un clic y con red de seguridad: la app impide actuar sobre el entorno equivocado y nunca pisa el trabajo local del desarrollador.",
+      "tecnica": "Merge, deploy y bump de versiones en GitLab ejecutados con git commit-tree y worktrees desechables (sin tocar el working copy), lock por repositorio (409), pushes sin force y lista blanca de keywords de CI/CD validada en backend y frontend; toda acción destructiva en Kubernetes/Mongo requiere clúster explícito y --context por comando."
+    },
+    {
+      "general": "Una misma base de código funciona como programa instalable en Windows y Linux, como app móvil y se actualiza automáticamente.",
+      "tecnica": "Tauri 2 con backend NestJS empaquetado como sidecar binario (pkg), updater firmado con Ed25519 y manifiesto generado en CI, build PWA separado (vite-plugin-pwa/Workbox) desplegado en Cloudflare Pages; releases disparados por tags con keywords."
+    },
+    {
+      "general": "Visibilidad en tiempo real de los servidores: estado, registros y alertas de salud de varios clústeres, además de copias de seguridad y restauraciones de bases de datos verificadas.",
+      "tecnica": "Watcher de pods con SSE filtrado por clúster y suscriptor, logs de kubectl en streaming, integración con Google Cloud Monitoring (ADC) con caché compartida, backups/restores de MongoDB con verificación de conteos e importación por streaming (mongodump/mongorestore) para colecciones grandes sin agotar memoria."
+    },
+    {
+      "general": "Módulo de gestión de equipos con roles y permisos: tareas con cronómetro, tickets de soporte, operaciones por fases, y trazabilidad de qué cambio se desplegó en qué plataforma.",
+      "tecnica": "NestJS + PostgreSQL/TypeORM con JWT revalidado contra BD en cada petición (revocación inmediata), guard de permisos por handler, activity log en cada escritura, seeders idempotentes, paginación server-side y registro MR↔ticket con estado 'desplegado en' por plataforma."
+    },
+    {
+      "general": "Seguridad tomada en serio: auditoría propia que encontró y corrigió fallos importantes, respaldada por cientos de pruebas automáticas que no tocan sistemas reales.",
+      "tecnica": "Hardening documentado contra inyección de comandos (execFileSync + validadores), SSRF en el proxy, escalada de privilegios y enumeración de usuarios por timing; Helmet, CORS restrictivo, rate limiting, bind a 127.0.0.1 y redacción de secretos en logs; suite 'test:safety' con dobles de kubectl/gcloud/docker/git y sandbox de repos."
+    }
+  ],
+  "skills": [
+    "Desarrollo full-stack",
+    "Automatización de procesos DevOps",
+    "Integración de APIs (GitLab, GitHub, Google Cloud, proveedores de IA)",
+    "Aplicaciones de escritorio multiplataforma",
+    "Aplicaciones web progresivas (PWA) y diseño responsive",
+    "Diseño de sistemas de roles y permisos",
+    "CI/CD y despliegue en la nube",
+    "Orquestación de contenedores (Kubernetes, Docker)",
+    "Bases de datos relacionales y NoSQL",
+    "Seguridad de aplicaciones y auditoría",
+    "Pruebas automatizadas",
+    "Integración de IA generativa en producto",
+    "Arquitectura de software y documentación técnica"
+  ],
+  "stack": [
+    "TypeScript",
+    "React 19",
+    "Vite",
+    "Tailwind CSS v4",
+    "Flowbite React",
+    "Recharts",
+    "Tauri 2 (Rust)",
+    "Node.js",
+    "NestJS 11",
+    "PostgreSQL",
+    "TypeORM",
+    "JWT / Passport",
+    "MongoDB",
+    "Kubernetes (GKE, kubectl)",
+    "Docker Compose",
+    "GitLab API (gitbeaker)",
+    "GitHub API (Octokit)",
+    "Google Cloud Monitoring",
+    "MQTT",
+    "Server-Sent Events",
+    "Gemini / Groq / OpenRouter y otras APIs de LLM",
+    "GitHub Actions",
+    "Railway",
+    "Cloudflare Pages",
+    "PWA (Workbox)",
+    "pnpm"
+  ],
+  "milestones": [
+    {
+      "week": "2025-11-17",
+      "text": "Nace el proyecto: primera versión de un panel para revisar y aprobar cambios de código desde un solo lugar."
+    },
+    {
+      "week": "2025-11-24",
+      "text": "Despliegues con un clic, historial de lo publicado y posibilidad de volver a una versión anterior si algo falla."
+    },
+    {
+      "week": "2025-12-01",
+      "text": "Monitoreo de servidores con filtros y búsqueda, soporte para varios entornos y copias de seguridad de bases de datos."
+    },
+    {
+      "week": "2025-12-08",
+      "text": "Se convierte en aplicación de escritorio y suma la opción de descargar y arrancar los servicios del equipo en local con pocos clics."
+    },
+    {
+      "week": "2026-03-16",
+      "text": "Gestión de la infraestructura local con contenedores y herramientas para copiar datos de prueba desde los entornos remotos."
+    },
+    {
+      "week": "2026-05-11",
+      "text": "Gran salto: inicio de sesión con roles y permisos, nuevo módulo de gestión de equipos (tareas, áreas, proyectos, recursos), registro de actividad e instaladores automáticos para Windows y Linux."
+    },
+    {
+      "week": "2026-05-18",
+      "text": "Versión para móvil, diseño adaptable, alertas de inactividad y despliegue automático a la nube."
+    },
+    {
+      "week": "2026-06-01",
+      "text": "Asistente de inteligencia artificial integrado y menús que se adaptan a los permisos de cada persona."
+    },
+    {
+      "week": "2026-06-08",
+      "text": "Creación de solicitudes de cambio desde la app con descripción redactada por IA, módulo de tickets de soporte y operaciones organizadas por fases."
+    },
+    {
+      "week": "2026-06-22",
+      "text": "Actualizaciones automáticas firmadas de la app de escritorio y primera ronda de refuerzo de seguridad."
+    },
+    {
+      "week": "2026-07-13",
+      "text": "Entornos configurables desde la propia app, permisos por entorno y scripts personalizados con salida en tiempo real."
+    },
+    {
+      "week": "2026-09-21",
+      "text": "Auditoría de seguridad completa: se corrigen fallos, se actualizan dependencias y se añade una batería de pruebas automáticas que protege las operaciones delicadas."
+    }
+  ]
+}
