@@ -90,7 +90,7 @@
   "milestones": [
     {
       "week": "2026-09-14",
-      "text": "Diseño del producto y primera versión funcional: busca ofertas en LinkedIn, llena los formularios con IA y con las respuestas guardadas del usuario, y avisa cuando no sabe algo. Se añadió la revisión antes de enviar, el guardado seguro de credenciales, la app de escritorio para Windows con inicio de sesión integrado, un rediseño completo de la interfaz y la búsqueda en Computrabajo."
+      "text": "Diseño del producto y primera versión funcional: encuentra ofertas en LinkedIn y prepara las postulaciones con IA y con las respuestas guardadas del usuario, preguntando cuando no sabe algo. Se añadió la revisión obligatoria antes de enviar, el guardado seguro de credenciales, la app de escritorio para Windows, un rediseño completo de la interfaz y la búsqueda en Computrabajo."
     },
     {
       "week": "2026-09-21",
