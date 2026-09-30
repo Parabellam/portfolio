@@ -14,6 +14,10 @@
   const REST_X = -0.42;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+  const TURN = Math.PI * 2;
+  // La inclinación de reposo más cercana (mismo ángulo + vueltas completas): tras girar en
+  // vertical, el cubo vuelve a su postura sin desenrollar las vueltas que dio.
+  const restNear = (x: number) => REST_X + Math.round((x - REST_X) / TURN) * TURN;
 
   function hasWebGL2() {
     try {
@@ -45,15 +49,17 @@
 
     // Interacción: giro solo, inclinación hacia el cursor y arrastre con impulso.
     const zone = host.closest<HTMLElement>('[data-cube-zone]') ?? host;
-    let rx = REST_X, ry = 0.6, tx = REST_X, ty = 0.6, spin = 0;
+    let rx = REST_X, ry = 0.6, tx = REST_X, ty = 0.6, spin = 0, spinX = 0;
     let mode: 'auto' | 'hover' | 'drag' = 'auto';
     let hoverBase = 0;
+    let hoverBaseX = REST_X;
     let last = { x: 0, y: 0 };
 
     zone.addEventListener('pointerenter', (e) => {
       if (e.pointerType !== 'mouse' || mode === 'drag') return;
       mode = 'hover';
       hoverBase = ty;
+      hoverBaseX = restNear(tx);
     });
     zone.addEventListener('pointerleave', () => {
       if (mode === 'hover') mode = 'auto';
@@ -64,11 +70,12 @@
       const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
       const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
       ty = hoverBase + nx * 1.1;
-      tx = REST_X + ny * 0.7;
+      tx = hoverBaseX + ny * 0.7;
     });
     host.addEventListener('pointerdown', (e) => {
       mode = 'drag';
       spin = 0;
+      spinX = 0;
       last = { x: e.clientX, y: e.clientY };
       host.setPointerCapture(e.pointerId);
       host.classList.add('dragging');
@@ -79,8 +86,9 @@
       const dy = e.clientY - last.y;
       last = { x: e.clientX, y: e.clientY };
       ty += dx * 0.01;
-      tx = clamp(tx + dy * 0.008, -1.4, 1.4);
+      tx += dy * 0.01; // sin tope: también da vueltas completas en vertical
       spin = clamp(dx * 0.01, -0.3, 0.3);
+      spinX = clamp(dy * 0.01, -0.3, 0.3);
     });
     const release = (e: PointerEvent) => {
       if (mode !== 'drag') return;
@@ -89,6 +97,7 @@
       const inside = e.pointerType === 'mouse' && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
       mode = inside ? 'hover' : 'auto';
       hoverBase = ty;
+      hoverBaseX = restNear(tx);
     };
     host.addEventListener('pointerup', release);
     host.addEventListener('pointercancel', release);
@@ -106,7 +115,9 @@
         ty += spin;
         spin *= 0.95;
         if (Math.abs(spin) < 0.002 && !reduceMotion.matches) ty += dt * 0.25;
-        tx += (REST_X - tx) * 0.02;
+        tx += spinX;
+        spinX *= 0.95;
+        if (Math.abs(spinX) < 0.002) tx += (restNear(tx) - tx) * 0.02;
       }
       const ease = mode === 'drag' ? 0.35 : 0.08;
       rx += (tx - rx) * ease;

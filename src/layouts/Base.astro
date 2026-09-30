@@ -1,6 +1,7 @@
 ---
 import site from '../data/site.json';
 import ViewToggle from '../components/ViewToggle.astro';
+import Contact from '../components/Contact.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -48,22 +49,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.r
     <main>
       <slot />
     </main>
-    <footer class="footer" id="contacto">
-      <div class="wrap footer-inner">
-        <div>
-          <p class="footer-title">¿Hablamos?</p>
-          <p class="muted">
-            {site.available ? 'Estoy abierto a nuevas oportunidades.' : 'Siempre abierto a conversar.'}
-          </p>
-        </div>
-        <ul class="links">
-          {site.links.email && <li><a href={`mailto:${site.links.email}`}>Email</a></li>}
-          {site.links.linkedin && <li><a href={site.links.linkedin}>LinkedIn</a></li>}
-          {site.links.github && <li><a href={site.links.github}>GitHub</a></li>}
-          {site.links.cv && <li><a href={site.links.cv}>Hoja de vida</a></li>}
-        </ul>
-      </div>
-    </footer>
+    <Contact />
     <div id="tip" class="tip" role="tooltip" hidden></div>
     <script>
       import '../scripts/tooltip';

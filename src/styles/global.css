@@ -258,36 +258,3 @@ html[data-view='tecnica'] [data-v='general'] {
 .tip[hidden] {
   display: none;
 }
-
-/* Pie */
-.footer {
-  margin-top: 5rem;
-  padding-block: 2.5rem;
-  border-top: 1px solid var(--line);
-}
-.footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-}
-.footer-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-.footer p {
-  margin: 0;
-}
-.links {
-  display: flex;
-  gap: 1.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.links a {
-  color: var(--ink);
-  font-weight: 500;
-}
