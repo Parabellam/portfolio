@@ -5,7 +5,7 @@
   "tier": "menor",
   "name": "Bot de pesca para Black Desert Online: automatización guiada por visión por computadora",
   "category": "Automatización e IA",
-  "status": "Prototipo",
+  "status": "En producción",
   "pitch": {
     "general": "Experimento personal que automatiza la pesca del videojuego Black Desert Online: el programa mira la pantalla, reconoce en qué fase está la partida y pulsa las teclas que corresponden.",
     "tecnica": "Aplicación de escritorio en Python que lee el estado del juego a partir de capturas de pantalla (coincidencia de plantillas con OpenCV y análisis de color por píxeles con NumPy) y controla teclado y ratón con keyboard y PyAutoGUI, orquestado como una máquina de estados en bucle."
@@ -19,7 +19,7 @@
     "tecnica": "Interfaz Tkinter que lanza el ciclo en un hilo aparte; PyGetWindow activa la ventana del juego. Cada fase se detecta en regiones fijas de pantalla: avisos, menú y ventana de botín por localización de plantillas (PyScreeze con umbral de confianza); la secuencia de teclas por coincidencia de plantillas de OpenCV en escala de grises con varias plantillas por letra, leyendo de izquierda a derecha y excluyendo la zona ya procesada para no repetir letras; el tipo de captura por máscaras de rangos RGB y porcentaje de píxeles verdes o azules. Las teclas se envían con la librería keyboard con intervalos aleatorios y el ratón se desplaza por PyAutoGUI con trayectorias de varios tramos y curvas de aceleración variadas."
   },
   "result": {
-    "general": "El programa completa ciclos de pesca de principio a fin sin intervención y sirvió para aprender a reconocer imágenes en pantalla y a automatizar tareas en aplicaciones que no fueron pensadas para ello. Es un proyecto de uso personal, no pensado para distribuirse.",
+    "general": "Estuvo en uso real: completaba ciclos de pesca de principio a fin sin intervención. Sirvió además para aprender a reconocer imágenes en pantalla y a automatizar aplicaciones que no fueron pensadas para ello. Es de uso personal, no pensado para distribuirse.",
     "tecnica": "Unas 1.100 líneas de Python sin dependencias de servicios externos. Funciona sobre una resolución y disposición de interfaz concretas (regiones de captura fijas) y se calibró con capturas reales del juego; no tiene tests automatizados ni empaquetado. Incluye un modo de depuración que conserva capturas y registros solo de los ciclos fallidos."
   },
   "role": "Proyecto personal de ocio: diseño, desarrollo, captura de plantillas de referencia y calibración de colores y tiempos.",
