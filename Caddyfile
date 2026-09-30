@@ -8,6 +8,14 @@
 	encode zstd gzip
 
 	header {
+		# Railway termina HTTPS delante; el navegador recuerda usar siempre HTTPS.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# La política de contenido (scripts y estilos con hash) va en una <meta> que genera Astro;
+		# lo que una <meta> no puede expresar va aquí.
+		Content-Security-Policy "frame-ancestors 'none'"
+		Cross-Origin-Opener-Policy same-origin
+		Cross-Origin-Resource-Policy same-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
 		X-Frame-Options DENY

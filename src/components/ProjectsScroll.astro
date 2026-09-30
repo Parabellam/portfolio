@@ -78,6 +78,8 @@ const slides = projects.map((p, i) => {
   ScrollTrigger.config({ ignoreMobileResize: true });
 
   const section = document.querySelector<HTMLElement>('.ps')!;
+  section.classList.add('lava-paused');
+  new IntersectionObserver(([entry]) => section.classList.toggle('lava-paused', !entry.isIntersecting)).observe(section);
   const mm = gsap.matchMedia();
   const motion = '(prefers-reduced-motion: no-preference)';
 
@@ -214,7 +216,7 @@ const slides = projects.map((p, i) => {
   }
   .ps-word {
     margin: 0;
-    font-family: 'Big Shoulders Display', sans-serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(64px, 16vw, 140px);
     line-height: 0.9;
@@ -258,7 +260,7 @@ const slides = projects.map((p, i) => {
     z-index: 1;
   }
   .ps-n {
-    font-family: 'Geist Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.8125rem;
     color: var(--accent-2);
   }
@@ -267,7 +269,7 @@ const slides = projects.map((p, i) => {
     right: -0.04em;
     top: 50%;
     transform: translateY(-50%);
-    font-family: 'Big Shoulders Display', sans-serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(160px, 26vw, 360px);
     line-height: 0.8;
@@ -277,7 +279,7 @@ const slides = projects.map((p, i) => {
     position: relative;
     z-index: 1;
     margin: 0;
-    font-family: 'Big Shoulders Display', sans-serif;
+    font-family: var(--font-display);
     font-weight: 900;
     font-size: clamp(48px, 7vw, 104px);
     line-height: 0.86;
@@ -379,7 +381,7 @@ const slides = projects.map((p, i) => {
     margin: 0;
     padding: 0;
     list-style: none;
-    font-family: 'Geist Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: #6e665b;
     z-index: 2;

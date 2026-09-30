@@ -1,4 +1,5 @@
 ---
+import { Font } from 'astro:assets';
 import site from '../data/site.json';
 import ViewToggle from '../components/ViewToggle.astro';
 import Contact from '../components/Contact.astro';
@@ -20,12 +21,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.r
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
-    />
+    <Font cssVariable="--font-sans" preload={[{ weight: 400 }, { weight: 600 }]} />
+    <Font cssVariable="--font-display" preload={[{ weight: 900 }]} />
+    <Font cssVariable="--font-mono" />
     <title>{pageTitle}</title>
     <script is:inline>
       try {

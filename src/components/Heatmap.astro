@@ -41,7 +41,7 @@ function tipFor(date: string, level: number, monday: string) {
 }
 ---
 
-<figure class="heatmap" aria-label={label} style={`--weeks:${columns.length}`}>
+<figure class="heatmap" aria-label={label} data-weeks={columns.length}>
   <div class="scroller" data-scroll-end>
     <div class="grid">
       <div class="months" aria-hidden="true">
@@ -85,9 +85,14 @@ function tipFor(date: string, level: number, monday: string) {
 </script>
 
 <style>
+  /* Sin atributo style: la política de seguridad no permite estilos en línea. */
   .heatmap {
+    --weeks: 53;
     margin: 0;
     container-type: inline-size;
+  }
+  .heatmap[data-weeks='26'] {
+    --weeks: 26;
   }
   .scroller {
     --gap: 3px;

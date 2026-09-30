@@ -3,9 +3,22 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Página no encontrada">
-  <section class="wrap" style="padding-block: 6rem 2rem;">
-    <h1 style="margin: 0 0 1rem; letter-spacing: -0.03em;">Esta página no existe</h1>
-    <p class="muted" style="margin: 0 0 2rem;">Puede que el proyecto haya cambiado de nombre.</p>
+  <section class="wrap missing">
+    <h1>Esta página no existe</h1>
+    <p class="muted">Puede que el proyecto haya cambiado de nombre.</p>
     <a class="btn primary" href="/">Volver al inicio</a>
   </section>
 </Base>
+
+<style>
+  .missing {
+    padding-block: 6rem 2rem;
+  }
+  h1 {
+    margin: 0 0 1rem;
+    letter-spacing: -0.03em;
+  }
+  p {
+    margin: 0 0 2rem;
+  }
+</style>

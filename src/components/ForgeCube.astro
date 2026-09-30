@@ -19,13 +19,28 @@
   // vertical, el cubo vuelve a su postura sin desenrollar las vueltas que dio.
   const restNear = (x: number) => REST_X + Math.round((x - REST_X) / TURN) * TURN;
 
+  // Solo WebGL con aceleración de hardware. Sin GPU el navegador lo simula por software y cada
+  // cuadro bloquea la página; en ese caso el respaldo 2D es mucho más liviano.
   function hasWebGL2() {
     try {
-      return !!document.createElement('canvas').getContext('webgl2');
+      const gl = document.createElement('canvas').getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+      if (!gl) return false;
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
+      const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      return !/swiftshader|llvmpipe|softpipe|basic render|software/i.test(name);
     } catch {
       return false;
     }
   }
+
+  // El cubo es decoración: arranca cuando la página ya cargó y el navegador está libre, para no
+  // competir con el texto principal.
+  const whenIdle = (fn: () => void) => {
+    const run = () => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200));
+    if (document.readyState === 'complete') run();
+    else window.addEventListener('load', run, { once: true });
+  };
 
   async function createRenderer(host: HTMLElement): Promise<ForgeRenderer> {
     if (hasWebGL2()) {
@@ -39,7 +54,7 @@
     return createCanvasRenderer(host);
   }
 
-  document.querySelectorAll<HTMLElement>('[data-forge]').forEach(async (host) => {
+  whenIdle(() => document.querySelectorAll<HTMLElement>('[data-forge]').forEach(async (host) => {
     const view = await createRenderer(host);
     host.dataset.renderer = view.kind;
 
@@ -134,7 +149,7 @@
         frame = requestAnimationFrame(tick);
       }
     }).observe(host);
-  });
+  }));
 </script>
 
 <style>
@@ -154,5 +169,12 @@
     inset: 0;
     width: 100%;
     height: 100%;
+    animation: forge-in 0.6s ease-out;
+  }
+  @keyframes forge-in {
+    from { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .forge :global(canvas) { animation: none; }
   }
 </style>

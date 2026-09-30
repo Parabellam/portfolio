@@ -35,6 +35,8 @@
   0% { background-position: 0% 0%, 100% 30%, 20% 100%, 0% 50%, 0 0; }
   100% { background-position: 100% 100%, 0% 70%, 80% 0%, 100% 20%, 0 0; }
 }
+/* La lava solo fluye cuando se ve: fuera de pantalla no repinta cada cuadro. */
+.lava-paused .lava-text { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
   .lava-text { animation: none; }
 }
@@ -53,7 +55,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -107,7 +109,7 @@ html[data-view='tecnica'] [data-v='general'] {
   height: 60px;
 }
 .brand {
-  font-family: 'Big Shoulders Display', sans-serif;
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: 1.375rem;
   text-transform: uppercase;
@@ -228,7 +230,7 @@ html[data-view='tecnica'] [data-v='general'] {
   font-size: 0.8125rem;
 }
 .chips.mono li {
-  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
 }
 

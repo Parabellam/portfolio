@@ -136,7 +136,8 @@ function glowSprite(): Texture {
 
 export function createWebGLRenderer(host: HTMLElement): ForgeRenderer {
   // Si el navegador no puede crear el contexto, esto lanza y se usa el respaldo 2D.
-  const renderer = new WebGLRenderer({ antialias: true, alpha: true });
+  // Sin GPU real (WebGL por software) falla a propósito y se usa el respaldo 2D.
+  const renderer = new WebGLRenderer({ antialias: true, alpha: true, failIfMajorPerformanceCaveat: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 0);
   host.appendChild(renderer.domElement);
