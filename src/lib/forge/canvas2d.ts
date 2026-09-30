@@ -141,7 +141,9 @@ export function createCanvasRenderer(host: HTMLElement): ForgeRenderer {
     render(rx, ry, time) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
-      const pts = V.map((p) => project(p, rx, ry, 0.1));
+      // En pantalla Y apunta hacia abajo (al revés que en WebGL): los giros sobre X y Z se invierten
+      // para que arrastrar y seguir el cursor se sientan igual que en la versión WebGL.
+      const pts = V.map((p) => project(p, -rx, ry, -0.1));
       const edges = EDGES.map(([a, b]) => ({ a: pts[a], b: pts[b], z: (pts[a].z + pts[b].z) / 2 }));
       // Aristas de atrás, luego la masa, luego las de adelante.
       edges.filter((e) => e.z < 0).forEach((e) => drawEdge(e.a, e.b));

@@ -48,7 +48,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     </div>
     <dl class="stats">
       <div class="stat">
-        <dt>días activos en el último año</dt>
+        <dt>días activos en mis proyectos personales en el último año</dt>
         <dd class="stat-value hot">{totalActive}</dd>
       </div>
       <div class="stat">
@@ -66,13 +66,13 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   <section class="wrap section" id="actividad">
     <div class="section-head">
-      <h2>Actividad del último año</h2>
+      <h2>Actividad en mis proyectos personales</h2>
       <p class="muted">
-        Cada cuadro es un día. Cuanto más intenso el color, más avance hubo en mis proyectos. Se actualiza solo cada semana.
+        Cada cuadro es un día del último año: cuanto más intenso el color, más avance hubo. Se actualiza solo cada semana.
       </p>
     </div>
     <div class="panel">
-      <Heatmap days={allDays} milestones={milestones} label={`${totalActive} días activos en el último año`} />
+      <Heatmap days={allDays} milestones={milestones} label={`${totalActive} días activos en mis proyectos personales en el último año`} />
     </div>
   </section>
 </Base>
