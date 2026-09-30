@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Heatmap from '../components/Heatmap.astro';
-import ProjectCard from '../components/ProjectCard.astro';
+import LavaCube from '../components/LavaCube.astro';
+import ProjectsScroll from '../components/ProjectsScroll.astro';
 import site from '../data/site.json';
 import { activeDays, mergeDays, projectDays, type Milestone } from '../lib/activity';
 
@@ -16,41 +17,52 @@ const inProduction = projects.filter((p) => p.data.status === 'En producción').
 const milestones: Milestone[] = projects.flatMap((p) =>
   p.data.milestones.map((m) => ({ ...m, project: p.data.name })),
 );
-const categories = [...new Set(projects.map((p) => p.data.category))];
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base>
   <section class="hero wrap">
-    {
-      site.available && (
-        <p class="available">
-          <span class="dot" /> Abierto a nuevas oportunidades
-        </p>
-      )
-    }
-    <p class="eyebrow">{site.role} · {site.location}</p>
-    <h1>{site.headline}</h1>
-    <p class="lead">{site.bio}</p>
-    <div class="actions">
-      <a class="btn primary" href="#proyectos">Ver proyectos</a>
-      <a class="btn" href="#contacto">Contactar</a>
+    <div class="hero-text">
+      <div class="hero-meta">
+        {
+          site.available && (
+            <p class="available">
+              <span class="dot" /> Abierto a nuevas oportunidades
+            </p>
+          )
+        }
+        <p class="eyebrow">{site.role} · {site.location}</p>
+      </div>
+      <h1>{site.headline}</h1>
+      <p class="lead">{site.bio}</p>
+      <div class="actions">
+        <a class="btn primary" href="#proyectos">
+          Ver proyectos
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="btn" href="#contacto">Contactar</a>
+      </div>
     </div>
+    <div class="hero-cube">
+      <LavaCube />
+    </div>
+    <dl class="stats">
+      <div class="stat">
+        <dt>días activos en el último año</dt>
+        <dd class="stat-value hot">{totalActive}</dd>
+      </div>
+      <div class="stat">
+        <dt>proyectos publicados aquí</dt>
+        <dd class="stat-value">{pad(projects.length)}</dd>
+      </div>
+      <div class="stat">
+        <dt>en producción hoy</dt>
+        <dd class="stat-value">{pad(inProduction)}</dd>
+      </div>
+    </dl>
   </section>
 
-  <section class="wrap stats" aria-label="Resumen">
-    <div class="stat">
-      <span class="stat-value">{totalActive}</span>
-      <span class="stat-label">días construyendo en el último año</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">{projects.length}</span>
-      <span class="stat-label">proyectos publicados aquí</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">{inProduction}</span>
-      <span class="stat-label">en producción hoy</span>
-    </div>
-  </section>
+  <ProjectsScroll projects={projects} />
 
   <section class="wrap section" id="actividad">
     <div class="section-head">
@@ -63,87 +75,72 @@ const categories = [...new Set(projects.map((p) => p.data.category))];
       <Heatmap days={allDays} milestones={milestones} label={`${totalActive} días activos en el último año`} />
     </div>
   </section>
-
-  <section class="wrap section" id="proyectos">
-    <div class="section-head">
-      <h2>Proyectos</h2>
-      <p class="muted">
-        Usa <strong>General</strong> para una explicación sin tecnicismos o <strong>Técnica</strong> para ver
-        arquitectura y stack.
-      </p>
-    </div>
-    {
-      categories.length > 1 && (
-        <div class="filters" role="group" aria-label="Filtrar por categoría">
-          <button type="button" data-filter="" aria-pressed="true">
-            Todos
-          </button>
-          {categories.map((c) => (
-            <button type="button" data-filter={c} aria-pressed="false">
-              {c}
-            </button>
-          ))}
-        </div>
-      )
-    }
-    <div class="cards">
-      {projects.map((p) => <ProjectCard project={p} />)}
-    </div>
-  </section>
 </Base>
-
-<script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
-  const cards = document.querySelectorAll<HTMLElement>('.card[data-category]');
-  buttons.forEach((b) =>
-    b.addEventListener('click', () => {
-      const f = b.dataset.filter;
-      buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      cards.forEach((c) => (c.hidden = !!f && c.dataset.category !== f));
-    }),
-  );
-</script>
 
 <style>
   .hero {
-    padding-block: clamp(3rem, 8vw, 6rem) 2.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-areas:
+      'text cube'
+      'stats stats';
+    align-items: center;
+    gap: 2rem 3rem;
+    min-height: calc(100vh - 61px);
+    padding-block: 3rem 2.5rem;
+    box-sizing: border-box;
+  }
+  .hero-text {
+    grid-area: text;
+  }
+  .hero-cube {
+    grid-area: cube;
+    display: grid;
+    place-items: center;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
   }
   .available {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin: 0 0 1.25rem;
-    padding: 0.3rem 0.75rem;
-    border: 1px solid var(--line);
+    margin: 0;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid #3a2a1e;
     border-radius: 999px;
     font-size: 0.8125rem;
-    background: var(--surface);
+    background: #16110d;
   }
   .dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--ok);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 25%, transparent);
+    background: var(--accent-2);
+    box-shadow: 0 0 10px var(--accent);
   }
   .eyebrow {
-    margin: 0 0 0.75rem;
-    color: var(--accent);
-    font-weight: 600;
-    font-size: 0.9375rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.875rem;
   }
   h1 {
-    max-width: 22ch;
+    max-width: 20ch;
     margin: 0 0 1.25rem;
-    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-size: clamp(2.125rem, 4.4vw, 3.75rem);
+    font-weight: 600;
     line-height: 1.08;
     letter-spacing: -0.03em;
   }
   .lead {
-    max-width: 60ch;
+    max-width: 58ch;
     margin: 0 0 2rem;
     font-size: 1.125rem;
-    color: var(--muted);
+    color: #b8ae9f;
   }
   .actions {
     display: flex;
@@ -151,66 +148,42 @@ const categories = [...new Set(projects.map((p) => p.data.category))];
     gap: 0.75rem;
   }
   .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    grid-area: stats;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 3.5rem;
+    margin: 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
   }
   .stat {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--surface);
+    flex-direction: column-reverse;
+    gap: 0.15rem;
   }
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-  .stat-label {
+  .stat dt {
     color: var(--muted);
     font-size: 0.875rem;
   }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
+  .stat-value {
+    margin: 0;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    line-height: 1;
   }
-  .filters button {
-    font: inherit;
-    font-size: 0.8125rem;
-    padding: 0.35rem 0.85rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--ink);
-    cursor: pointer;
+  .stat-value.hot {
+    color: var(--accent-2);
   }
-  .filters button[aria-pressed='true'] {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--bg);
-  }
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-    gap: 1rem;
-  }
-  @media (max-width: 640px) {
-    .stats {
+  @media (max-width: 760px) {
+    .hero {
       grid-template-columns: 1fr;
-    }
-    .stat {
-      flex-direction: row;
-      align-items: baseline;
-      gap: 0.75rem;
+      grid-template-areas: 'cube' 'text' 'stats';
+      min-height: 0;
+      padding-top: 2rem;
     }
     .stat-value {
-      font-size: 1.5rem;
+      font-size: 2.25rem;
     }
   }
 </style>

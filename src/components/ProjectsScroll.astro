@@ -1,0 +1,387 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Dual from './Dual.astro';
+import { activeDays, projectDays } from '../lib/activity';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { projects } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// "DevOps Hub: centro de control…" → título corto para el cartel + subtítulo.
+const slides = projects.map((p, i) => {
+  const [title, ...rest] = p.data.name.split(':');
+  const subtitle = rest.join(':').trim();
+  return {
+    id: p.id,
+    n: pad(i + 1),
+    title: title.trim(),
+    subtitle: subtitle ? subtitle[0].toUpperCase() + subtitle.slice(1) : '',
+    long: title.trim().length > 18,
+    data: p.data,
+    days: activeDays(projectDays(p.id)),
+  };
+});
+---
+
+<section class="ps" id="proyectos" aria-label="Proyectos">
+  <div class="ps-pin">
+    <div class="ps-word-wrap">
+      <h2 class="ps-word lava-text">Proyectos</h2>
+    </div>
+    <p class="ps-count" aria-hidden="true"><span data-count>1</span> / {pad(slides.length).replace(/^0/, '')}</p>
+    <ol class="ps-rail" aria-hidden="true">
+      {slides.map((s) => <li data-rail>{s.n}<span></span></li>)}
+    </ol>
+
+    {
+      slides.map((s) => (
+        <article class="ps-slide">
+          <a class="ps-card" href={`/proyectos/${s.id}`}>
+            <div class="ps-card-top">
+              <span class="ps-n">{s.n}</span>
+              <span class="badge">{s.data.category}</span>
+              <span class={`status ${s.data.status === 'En producción' ? 'live' : ''}`}>{s.data.status}</span>
+            </div>
+            <span class="ps-big lava-text" aria-hidden="true">{s.n}</span>
+            <h3 class:list={['ps-title', { long: s.long }]}>{s.title}</h3>
+          </a>
+          <div class="ps-text">
+            {s.subtitle && <p class="ps-subtitle">{s.subtitle}</p>}
+            <Dual value={s.data.pitch} as="p" class="ps-pitch" />
+            <ul class="ps-highlights">
+              {s.data.highlights.slice(0, 3).map((h) => <Dual value={h} as="li" />)}
+            </ul>
+            <div class="ps-foot">
+              <a class="btn primary" href={`/proyectos/${s.id}`}>
+                Ver proyecto
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+              {s.days > 0 && <span class="muted"><strong>{s.days}</strong> días activos</span>}
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector<HTMLElement>('.ps')!;
+  const mm = gsap.matchMedia();
+
+  // Solo en pantallas anchas y si la persona no pidió reducir el movimiento.
+  // Sin esto, la sección queda como una lista normal (ver el CSS base).
+  mm.add('(min-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
+    section.classList.add('is-pinned');
+    const slides = gsap.utils.toArray<HTMLElement>('.ps-slide', section);
+    const rail = gsap.utils.toArray<HTMLElement>('[data-rail]', section);
+    const count = section.querySelector<HTMLElement>('[data-count]')!;
+    const word = section.querySelector<HTMLElement>('.ps-word')!;
+
+    // Cuánto hay que correr la tarjeta para que empiece centrada en pantalla.
+    const centerShift = (card: HTMLElement) => window.innerWidth / 2 - (card.offsetLeft + card.offsetWidth / 2);
+
+    gsap.set(slides, { autoAlpha: 0 });
+    gsap.set(section.querySelectorAll('.ps-text'), { yPercent: -50 });
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${window.innerHeight * (slides.length * 2.2 + 1)}`,
+        pin: '.ps-pin',
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+      },
+    });
+
+    // 1. La palabra llena la pantalla y se aleja hacia arriba.
+    tl.to(word, { scale: 0.28, y: () => -window.innerHeight * 0.38, opacity: 0.3, duration: 1.2, ease: 'power1.inOut' });
+
+    const starts: number[] = [];
+    slides.forEach((slide, i) => {
+      const card = slide.querySelector<HTMLElement>('.ps-card')!;
+      const text = slide.querySelector<HTMLElement>('.ps-text')!;
+      const at = i === 0 ? '-=0.5' : '-=0.35';
+
+      // 2. La tarjeta sube desde abajo, centrada y más grande.
+      tl.set(slide, { autoAlpha: 1 }, at);
+      starts.push(tl.duration());
+      tl.fromTo(
+        card,
+        { y: () => window.innerHeight, x: () => centerShift(card), scale: 1.3 },
+        { y: 0, duration: 1, ease: 'power2.out' },
+        '<',
+      );
+      // 3. Se asienta a la izquierda y entra el texto por la derecha.
+      tl.to(card, { x: 0, scale: 1, duration: 0.9, ease: 'power2.inOut' });
+      tl.fromTo(text, { x: 80, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.6, ease: 'power2.out' }, '-=0.45');
+      tl.to({}, { duration: 0.5 }); // pausa para leer
+
+      // 4. Sale hacia arriba y deja paso al siguiente.
+      if (i < slides.length - 1) {
+        tl.to([card, text], { y: () => -window.innerHeight * 0.9, autoAlpha: 0, duration: 0.9, ease: 'power2.in' });
+      }
+    });
+
+    const update = () => {
+      const t = tl.time();
+      let active = 0;
+      starts.forEach((s, i) => { if (t >= s) active = i; });
+      count.textContent = String(active + 1);
+      rail.forEach((r, i) => r.classList.toggle('on', i === active));
+    };
+    tl.eventCallback('onUpdate', update);
+    update();
+
+    return () => section.classList.remove('is-pinned');
+  });
+</script>
+
+<style>
+  /* Base (celular, sin JS o con movimiento reducido): lista normal. */
+  .ps {
+    margin-top: 5rem;
+  }
+  .ps-pin {
+    width: 100%;
+    max-width: 1080px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    box-sizing: border-box;
+  }
+  .ps-word-wrap {
+    margin-bottom: 1.5rem;
+  }
+  .ps-word {
+    margin: 0;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 900;
+    font-size: clamp(64px, 16vw, 140px);
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+  .ps-count,
+  .ps-rail {
+    display: none;
+  }
+  .ps-slide {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 3.5rem;
+  }
+  .ps-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 260px;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    border-radius: 24px;
+    background: var(--surface);
+    border: 1px solid #3a2a1e;
+    box-shadow: 0 30px 120px rgba(255, 90, 31, 0.14);
+    color: var(--ink);
+    text-decoration: none;
+    overflow: hidden;
+  }
+  .ps-card:hover {
+    border-color: var(--accent);
+  }
+  .ps-card-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+  }
+  .ps-n {
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.8125rem;
+    color: var(--accent-2);
+  }
+  .ps-big {
+    position: absolute;
+    right: -0.04em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 900;
+    font-size: clamp(160px, 26vw, 360px);
+    line-height: 0.8;
+    opacity: 0.55;
+  }
+  .ps-title {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 900;
+    font-size: clamp(48px, 7vw, 104px);
+    line-height: 0.86;
+    text-transform: uppercase;
+    max-width: 11ch;
+  }
+  .ps-title.long {
+    font-size: clamp(36px, 4.6vw, 64px);
+    max-width: 14ch;
+  }
+  .ps-text {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .ps-subtitle {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .ps-pitch {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.0625rem;
+  }
+  .ps-highlights {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ps-highlights :global(li) {
+    position: relative;
+    padding-left: 1.4rem;
+    font-size: 0.9375rem;
+  }
+  .ps-highlights :global(li)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .ps-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .ps-foot strong {
+    color: var(--accent-2);
+  }
+
+  /* Escritorio con movimiento: pantalla fija y secuencia con el scroll. */
+  .ps.is-pinned {
+    margin-top: 0;
+  }
+  .is-pinned .ps-pin {
+    position: relative;
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    overflow: hidden;
+  }
+  .is-pinned .ps-word-wrap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+  }
+  .is-pinned .ps-word {
+    font-size: min(21vw, 38vh);
+    will-change: transform;
+  }
+  .is-pinned .ps-count {
+    display: block;
+    position: absolute;
+    top: 84px;
+    right: 6vw;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+  .is-pinned .ps-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 18px;
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: #6e665b;
+    z-index: 2;
+  }
+  .ps-rail li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.3s;
+  }
+  .ps-rail li span {
+    width: 18px;
+    height: 2px;
+    background: #3a322a;
+    transition: width 0.3s, background 0.3s;
+  }
+  .ps-rail li.on {
+    color: var(--accent-2);
+  }
+  .ps-rail li.on span {
+    width: 36px;
+    background: var(--accent);
+  }
+  .is-pinned .ps-slide {
+    position: absolute;
+    inset: 0;
+    display: block;
+    margin: 0;
+  }
+  .is-pinned .ps-card {
+    position: absolute;
+    left: 6vw;
+    top: 50%;
+    width: 44vw;
+    height: 64vh;
+    margin-top: -32vh;
+    padding: 2rem;
+    will-change: transform;
+  }
+  .is-pinned .ps-text {
+    position: absolute;
+    left: 56vw;
+    top: 50%;
+    width: 34vw;
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 900px) {
+    .ps-slide {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 2.5rem;
+    }
+  }
+</style>

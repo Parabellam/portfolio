@@ -1,0 +1,101 @@
+---
+// Cubo 3D en CSS puro: gira y la lava fluye por sus caras. Sin JS ni WebGL,
+// así que carga al instante y no pesa en celulares.
+interface Props {
+  size?: string;
+}
+
+const { size = 'clamp(160px, 22vw, 320px)' } = Astro.props;
+---
+
+<div class="cube-wrap" style={`--s:${size}`} aria-hidden="true">
+  <div class="glow"></div>
+  <div class="scene">
+    <div class="cube">
+      <div class="face f1"></div>
+      <div class="face f2"></div>
+      <div class="face f3"></div>
+      <div class="face f4"></div>
+      <div class="face f5"></div>
+      <div class="face f6"></div>
+    </div>
+  </div>
+  <div class="floor"></div>
+</div>
+
+<style>
+  .cube-wrap {
+    position: relative;
+    width: var(--s);
+    height: calc(var(--s) * 1.35);
+    display: grid;
+    place-items: center;
+  }
+  .glow {
+    position: absolute;
+    inset: -45%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 90, 31, 0.3) 0%, rgba(198, 42, 15, 0.1) 40%, transparent 70%);
+    filter: blur(20px);
+    animation: breathe 7s ease-in-out infinite alternate;
+  }
+  .scene {
+    perspective: calc(var(--s) * 3.4);
+  }
+  .cube {
+    width: var(--s);
+    height: var(--s);
+    position: relative;
+    transform-style: preserve-3d;
+    animation: spin 22s linear infinite;
+  }
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--s) * 0.07);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 62% 22%, rgba(20, 6, 2, 0.75) 0 7%, transparent 12%),
+      radial-gradient(circle at 28% 70%, rgba(20, 6, 2, 0.6) 0 5%, transparent 10%),
+      radial-gradient(circle at 30% 30%, #fff1b8 0%, #ffb020 10%, transparent 32%),
+      radial-gradient(circle at 72% 62%, #ff5a1f 0%, transparent 42%),
+      radial-gradient(circle at 40% 85%, #c62a0f 0%, transparent 48%),
+      #2a0b04;
+    background-size: 260% 260%, 300% 300%, 220% 220%, 240% 240%, 200% 200%, 100% 100%;
+    animation: flow 7s ease-in-out infinite alternate;
+    box-shadow:
+      inset 0 0 calc(var(--s) * 0.22) rgba(10, 3, 1, 0.7),
+      0 0 calc(var(--s) * 0.15) rgba(255, 90, 31, 0.35);
+  }
+  .f1 { transform: translateZ(calc(var(--s) / 2)); }
+  .f2 { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); animation-delay: -2s; }
+  .f3 { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); animation-delay: -4s; }
+  .f4 { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); animation-delay: -1s; }
+  .f5 { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); animation-delay: -3s; }
+  .f6 { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); animation-delay: -5s; }
+  .floor {
+    position: absolute;
+    bottom: 0;
+    width: 110%;
+    height: 12%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255, 90, 31, 0.45), transparent 70%);
+    filter: blur(12px);
+  }
+  @keyframes spin {
+    from { transform: rotateX(-24deg) rotateY(0deg) rotateZ(6deg); }
+    to { transform: rotateX(-24deg) rotateY(360deg) rotateZ(6deg); }
+  }
+  @keyframes flow {
+    0% { background-position: 0% 0%, 100% 20%, 10% 10%, 90% 60%, 40% 100%, 0 0; }
+    100% { background-position: 80% 90%, 10% 80%, 90% 80%, 20% 10%, 70% 0%, 0 0; }
+  }
+  @keyframes breathe {
+    from { opacity: 0.55; transform: scale(0.92); }
+    to { opacity: 0.9; transform: scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cube { animation: none; transform: rotateX(-24deg) rotateY(35deg) rotateZ(6deg); }
+    .face, .glow { animation: none; }
+  }
+</style>

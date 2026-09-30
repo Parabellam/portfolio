@@ -1,36 +1,42 @@
 :root {
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --ink: #18181b;
-  --muted: #5b5b66;
-  --line: #e4e4e7;
-  --accent: #4f46e5;
-  --ok: #16a34a;
-  --heat-0: #ebebef;
-  --heat-1: #c7d2fe;
-  --heat-2: #818cf8;
-  --heat-3: #4f46e5;
-  --heat-4: #312e81;
-  --radius: 12px;
-  color-scheme: light;
+  /* Paleta oscura y cálida, pensada alrededor del cubo de lava. */
+  --bg: #0b0a09;
+  --surface: #14110e;
+  --ink: #f3ede4;
+  --muted: #a39a8c;
+  --line: #2a241e;
+  --accent: #ff5a1f;
+  --accent-2: #ffb020;
+  --ok: #4ade80;
+  --heat-0: #1b1713;
+  --heat-1: #4a1a0a;
+  --heat-2: #9a2b0c;
+  --heat-3: #ff5a1f;
+  --heat-4: #ffb020;
+  --radius: 14px;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0c0c0f;
-    --surface: #151519;
-    --ink: #f4f4f5;
-    --muted: #a1a1aa;
-    --line: #27272d;
-    --accent: #818cf8;
-    --ok: #4ade80;
-    --heat-0: #1f1f25;
-    --heat-1: #2e2a6b;
-    --heat-2: #4338ca;
-    --heat-3: #6366f1;
-    --heat-4: #a5b4fc;
-    color-scheme: dark;
-  }
+/* Texto con lava fluyendo por dentro de las letras. */
+.lava-text {
+  background:
+    radial-gradient(circle at 30% 40%, #fff1b8 0%, #ffb020 8%, transparent 24%),
+    radial-gradient(circle at 70% 60%, #ff5a1f 0%, transparent 36%),
+    radial-gradient(circle at 45% 90%, #c62a0f 0%, transparent 44%),
+    radial-gradient(circle at 85% 20%, rgba(20, 6, 2, 0.8) 0 6%, transparent 11%),
+    #3a1206;
+  background-size: 180% 180%, 200% 200%, 170% 170%, 220% 220%, 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lava-flow 8s ease-in-out infinite alternate;
+}
+@keyframes lava-flow {
+  0% { background-position: 0% 0%, 100% 30%, 20% 100%, 0% 50%, 0 0; }
+  100% { background-position: 100% 100%, 0% 70%, 80% 0%, 100% 20%, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lava-text { animation: none; }
 }
 
 *,
@@ -101,7 +107,11 @@ html[data-view='tecnica'] [data-v='general'] {
   height: 60px;
 }
 .brand {
-  font-weight: 700;
+  font-family: 'Big Shoulders Display', sans-serif;
+  font-weight: 900;
+  font-size: 1.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--ink);
   text-decoration: none;
   letter-spacing: -0.01em;
@@ -167,9 +177,10 @@ html[data-view='tecnica'] [data-v='general'] {
   border-color: var(--ink);
 }
 .btn.primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #120604;
+  font-weight: 600;
 }
 .btn.primary:hover {
   opacity: 0.9;
