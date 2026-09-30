@@ -38,7 +38,9 @@ const contacts = [
               </span>
               <span class="contact-text">
                 <span class="contact-label">{c.label}</span>
-                <span class="contact-value">{c.value}</span>
+                <span class="contact-value">
+                  {c.key === 'email' ? <>{c.value.split('@')[0]}<wbr />@{c.value.split('@')[1]}</> : c.value}
+                </span>
               </span>
             </a>
           </li>
@@ -79,7 +81,12 @@ const contacts = [
     padding: 0;
     list-style: none;
   }
+  /* Todas las tarjetas de una fila miden lo mismo, aunque el correo ocupe dos líneas. */
+  .contact-list li {
+    display: flex;
+  }
   .contact-card {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 0.875rem;
@@ -123,7 +130,7 @@ const contacts = [
   .contact-value {
     font-size: 0.9375rem;
     font-weight: 500;
-    overflow-wrap: anywhere;
+    overflow-wrap: anywhere; /* respaldo si ni partiendo en la @ cabe */
   }
   @media (min-width: 560px) {
     .contact-list {

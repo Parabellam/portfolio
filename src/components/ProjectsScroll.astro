@@ -115,7 +115,7 @@ const slides = projects.map((p, i) => {
     tl.to(word, {
       scale: desktop ? 0.28 : 0.45,
       y: () => -(window.innerHeight / 2 - 100),
-      opacity: 0.3,
+      opacity: 0.18,
       duration: 1.2,
       ease: 'power1.inOut',
     });
@@ -161,7 +161,39 @@ const slides = projects.map((p, i) => {
     tl.eventCallback('onUpdate', update);
     update();
 
-    return () => section.classList.remove('is-pinned', 'is-mobile');
+    // En escritorio el texto va en una columna de alto fijo y la vista técnica es mucho más larga.
+    // Si no cabe, se reduce la letra hasta un 20 %; si aun así no cabe, cada destacado se corta a
+    // 3 líneas (el texto completo sigue en la página del proyecto).
+    const texts = gsap.utils.toArray<HTMLElement>('.ps-text', section);
+    const fitTexts = () => {
+      if (!desktop) return;
+      const maxH = window.innerHeight * 0.8 - 20; // deja libre la barra superior
+      texts.forEach((el) => {
+        el.classList.remove('clamped');
+        let fit = 1;
+        el.style.setProperty('--fit', '1');
+        while (el.offsetHeight > maxH && fit > 0.8) {
+          fit = Math.round((fit - 0.05) * 100) / 100;
+          el.style.setProperty('--fit', String(fit));
+        }
+        if (el.offsetHeight > maxH) el.classList.add('clamped');
+      });
+    };
+    fitTexts();
+    ScrollTrigger.addEventListener('refreshInit', fitTexts);
+    // Cambiar entre General y Técnica cambia el largo del texto.
+    const viewObserver = new MutationObserver(fitTexts);
+    viewObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-view'] });
+
+    return () => {
+      ScrollTrigger.removeEventListener('refreshInit', fitTexts);
+      viewObserver.disconnect();
+      texts.forEach((el) => {
+        el.classList.remove('clamped');
+        el.style.removeProperty('--fit');
+      });
+      section.classList.remove('is-pinned', 'is-mobile');
+    };
   });
 </script>
 
@@ -387,11 +419,34 @@ const slides = projects.map((p, i) => {
     padding: 2rem;
     will-change: transform;
   }
+  .is-pinned:not(.is-mobile) .ps-subtitle {
+    font-size: calc(1.5rem * var(--fit, 1));
+  }
+  .is-pinned:not(.is-mobile) .ps-pitch {
+    font-size: calc(1.0625rem * var(--fit, 1));
+  }
+  .is-pinned:not(.is-mobile) .ps-highlights :global(li) {
+    font-size: calc(0.9375rem * var(--fit, 1));
+  }
+  .is-pinned .ps-text.clamped .ps-pitch {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+  }
+  .is-pinned .ps-text.clamped .ps-highlights :global(li) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
   .is-pinned .ps-text {
     position: absolute;
-    left: 56vw;
+    left: 54vw;
     top: 50%;
-    width: 34vw;
+    width: 35vw;
     display: grid;
     gap: 1.25rem;
   }
