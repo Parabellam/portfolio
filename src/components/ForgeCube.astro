@@ -1,236 +1,156 @@
 ---
-// Escena WebGL: un cubo de alambre con aristas brillantes y, dentro, una masa de lava que
-// se deforma sin parar. Se rota arrastrando; al pasar el cursor se inclina hacia él.
-// Sin WebGL queda un orbe estático en CSS.
+// Un cubo de alambre con aristas brillantes y, dentro, una masa de lava que se deforma
+// sin parar. Dibujado con Canvas 2D (no WebGL) para que funcione en cualquier navegador,
+// incluidos escritorios remotos y equipos sin aceleración gráfica.
+// Se rota arrastrando; al pasar el cursor se inclina hacia él.
 ---
 
 <div class="forge" data-forge aria-hidden="true">
-  <div class="forge-fallback"></div>
+  <canvas></canvas>
 </div>
 
 <script>
-  import {
-    AdditiveBlending,
-    BoxGeometry,
-    BufferGeometry,
-    CanvasTexture,
-    Color,
-    EdgesGeometry,
-    Float32BufferAttribute,
-    Group,
-    IcosahedronGeometry,
-    Mesh,
-    NormalBlending,
-    PerspectiveCamera,
-    Points,
-    PointsMaterial,
-    Scene,
-    ShaderMaterial,
-    WebGLRenderer,
-  } from 'three';
-  import type { Texture } from 'three';
-  import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
-  import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-  import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-
-  // Ruido simplex 3D (Ashima Arts / Stefan Gustavson, licencia MIT).
-  const NOISE = /* glsl */ `
-    vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
-    vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
-    vec4 permute(vec4 x){return mod289(((x*34.0)+10.0)*x);}
-    vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-    float snoise(vec3 v){
-      const vec2 C=vec2(1.0/6.0,1.0/3.0);
-      const vec4 D=vec4(0.0,0.5,1.0,2.0);
-      vec3 i=floor(v+dot(v,C.yyy));
-      vec3 x0=v-i+dot(i,C.xxx);
-      vec3 g=step(x0.yzx,x0.xyz);
-      vec3 l=1.0-g;
-      vec3 i1=min(g.xyz,l.zxy);
-      vec3 i2=max(g.xyz,l.zxy);
-      vec3 x1=x0-i1+C.xxx;
-      vec3 x2=x0-i2+C.yyy;
-      vec3 x3=x0-D.yyy;
-      i=mod289(i);
-      vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
-      float n_=0.142857142857;
-      vec3 ns=n_*D.wyz-D.xzx;
-      vec4 j=p-49.0*floor(p*ns.z*ns.z);
-      vec4 x_=floor(j*ns.z);
-      vec4 y_=floor(j-7.0*x_);
-      vec4 x=x_*ns.x+ns.yyyy;
-      vec4 y=y_*ns.x+ns.yyyy;
-      vec4 h=1.0-abs(x)-abs(y);
-      vec4 b0=vec4(x.xy,y.xy);
-      vec4 b1=vec4(x.zw,y.zw);
-      vec4 s0=floor(b0)*2.0+1.0;
-      vec4 s1=floor(b1)*2.0+1.0;
-      vec4 sh=-step(h,vec4(0.0));
-      vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
-      vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
-      vec3 p0=vec3(a0.xy,h.x);
-      vec3 p1=vec3(a0.zw,h.y);
-      vec3 p2=vec3(a1.xy,h.z);
-      vec3 p3=vec3(a1.zw,h.w);
-      vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
-      p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
-      vec4 m=max(0.5-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
-      m=m*m;
-      return 105.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
-    }
-  `;
-
-  const VERTEX = /* glsl */ `
-    uniform float uTime;
-    varying vec3 vNormal;
-    varying vec3 vView;
-    varying float vHeat;
-    ${NOISE}
-    // Deformación grande y lenta (la masa "respira") más un detalle fino.
-    float field(vec3 p){
-      float big = snoise(p * 0.62 + vec3(uTime * 0.21, uTime * 0.15, -uTime * 0.18));
-      float fine = snoise(p * 1.3 - vec3(uTime * 0.27));
-      return big * 0.36 + fine * 0.05;
-    }
-    vec3 displace(vec3 p){ return p + normalize(p) * field(p); }
-    void main(){
-      vec3 p = displace(position);
-      // Normal recalculada sobre la superficie deformada (dos vecinos en el plano tangente).
-      vec3 n = normalize(normal);
-      vec3 t = normalize(abs(n.y) < 0.99 ? cross(n, vec3(0.0, 1.0, 0.0)) : cross(n, vec3(1.0, 0.0, 0.0)));
-      vec3 b = cross(n, t);
-      float e = 0.02;
-      vec3 pt = displace(position + t * e);
-      vec3 pb = displace(position + b * e);
-      vec3 dn = normalize(cross(pt - p, pb - p));
-      vHeat = field(position);
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      vNormal = normalize(normalMatrix * dn);
-      vView = normalize(-mv.xyz);
-      gl_Position = projectionMatrix * mv;
-    }
-  `;
-
-  const FRAGMENT = /* glsl */ `
-    uniform vec3 uCore;
-    uniform vec3 uMid;
-    uniform vec3 uRim;
-    varying vec3 vNormal;
-    varying vec3 vView;
-    varying float vHeat;
-    void main(){
-      // De frente: rojo profundo. Hacia el borde: naranja y amarillo.
-      float facing = abs(dot(normalize(vNormal), normalize(vView)));
-      float rim = 1.0 - facing;
-      vec3 col = mix(uCore, uMid, smoothstep(0.0, 0.42, rim + vHeat * 0.2));
-      col = mix(col, uRim, smoothstep(0.32, 0.85, rim));
-      gl_FragColor = vec4(col, 1.0);
-      #include <colorspace_fragment>
-    }
-  `;
-
-  function glowSprite(): Texture {
-    const c = document.createElement('canvas');
-    c.width = c.height = 64;
-    const g = c.getContext('2d')!;
-    const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-    grad.addColorStop(0, 'rgba(255,240,210,1)');
-    grad.addColorStop(0.25, 'rgba(255,170,90,0.8)');
-    grad.addColorStop(1, 'rgba(255,90,31,0)');
-    g.fillStyle = grad;
-    g.fillRect(0, 0, 64, 64);
-    return new CanvasTexture(c);
-  }
-
-  function supportsWebGL() {
-    try {
-      const c = document.createElement('canvas');
-      return !!(c.getContext('webgl2') || c.getContext('webgl'));
-    } catch {
-      return false;
-    }
-  }
-
   const REST_X = -0.42;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
+  // Vértices y aristas de un cubo de lado 2.
+  const V: [number, number, number][] = [];
+  for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) V.push([x, y, z]);
+  const EDGES: [number, number][] = [];
+  for (let a = 0; a < 8; a++) {
+    for (let b = a + 1; b < 8; b++) {
+      const diff = V[a].reduce((n, c, i) => n + (c !== V[b][i] ? 1 : 0), 0);
+      if (diff === 1) EDGES.push([a, b]);
+    }
+  }
+
   document.querySelectorAll<HTMLElement>('[data-forge]').forEach((host) => {
-    if (!supportsWebGL()) return;
+    const canvas = host.querySelector('canvas')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const renderer = new WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
-    host.appendChild(renderer.domElement);
-    host.classList.add('ready');
-
-    const scene = new Scene();
-    const camera = new PerspectiveCamera(32, 1, 0.1, 50);
-    camera.position.set(0, 0, 7.3);
-
-    const group = new Group();
-    scene.add(group);
-
-    // Masa de lava.
-    const uniforms = {
-      uTime: { value: 0 },
-      uCore: { value: new Color('#e0301a') },
-      uMid: { value: new Color('#ff7a1a') },
-      uRim: { value: new Color('#ffdc4a') },
-    };
-    const blob = new Mesh(
-      new IcosahedronGeometry(1.1, 48),
-      new ShaderMaterial({ uniforms, vertexShader: VERTEX, fragmentShader: FRAGMENT }),
-    );
-    group.add(blob);
-
-    // Cubo de alambre: línea fina + dos halos aditivos que simulan el brillo.
-    const edges = new LineSegmentsGeometry().fromEdgesGeometry(new EdgesGeometry(new BoxGeometry(2.5, 2.5, 2.5)));
-    const lineLayers = [
-      { color: '#ffd0a0', width: 1.6, opacity: 1, additive: false },
-      { color: '#ff7a2a', width: 7, opacity: 0.22, additive: true },
-      { color: '#ff5a1f', width: 18, opacity: 0.07, additive: true },
-    ].map(({ color, width, opacity, additive }) => {
-      const mat = new LineMaterial({
-        color: new Color(color).getHex(),
-        linewidth: width,
-        transparent: opacity < 1,
-        opacity,
-        depthWrite: !additive,
-        blending: additive ? AdditiveBlending : NormalBlending,
-      });
-      group.add(new LineSegments2(edges, mat));
-      return mat;
-    });
-
-    // Puntos de luz en las esquinas.
-    const corners = new BufferGeometry();
-    const h = 1.25;
-    const pts: number[] = [];
-    for (const x of [-h, h]) for (const y of [-h, h]) for (const z of [-h, h]) pts.push(x, y, z);
-    corners.setAttribute('position', new Float32BufferAttribute(pts, 3));
-    group.add(
-      new Points(
-        corners,
-        new PointsMaterial({
-          size: 0.34,
-          map: glowSprite(),
-          transparent: true,
-          depthWrite: false,
-          blending: AdditiveBlending,
-        }),
-      ),
-    );
-
+    let size = 0;
+    let dpr = 1;
     const resize = () => {
-      const size = host.clientWidth;
-      renderer.setSize(size, size, false);
-      camera.aspect = 1;
-      camera.updateProjectionMatrix();
-      lineLayers.forEach((m) => m.resolution.set(size * renderer.getPixelRatio(), size * renderer.getPixelRatio()));
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      size = host.clientWidth;
+      canvas.width = Math.round(size * dpr);
+      canvas.height = Math.round(size * dpr);
     };
     new ResizeObserver(resize).observe(host);
     resize();
+
+    // Rotación, perspectiva y proyección a pantalla.
+    const project = (p: [number, number, number], rx: number, ry: number, rz: number) => {
+      let [x, y, z] = p;
+      let t = x * Math.cos(ry) + z * Math.sin(ry);
+      z = -x * Math.sin(ry) + z * Math.cos(ry);
+      x = t;
+      t = y * Math.cos(rx) - z * Math.sin(rx);
+      z = y * Math.sin(rx) + z * Math.cos(rx);
+      y = t;
+      t = x * Math.cos(rz) - y * Math.sin(rz);
+      y = x * Math.sin(rz) + y * Math.cos(rz);
+      x = t;
+      const f = 4.2;
+      const s = f / (f - z); // z > 0 = más cerca
+      const k = size * 0.25;
+      return { x: size / 2 + x * s * k, y: size / 2 + y * s * k, z };
+    };
+
+    // Contorno de la masa: radio que ondula con varias frecuencias (lóbulos grandes y lisos).
+    const blobPath = (t: number, spin: number) => {
+      const R = size * 0.2;
+      const n = 120;
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const q = a + spin;
+        const r =
+          R *
+          (1 +
+            0.13 * Math.sin(3 * q + t * 0.9) +
+            0.09 * Math.sin(2 * q - t * 0.7 + 1.3) +
+            0.05 * Math.sin(5 * q + t * 1.3 + 0.4) +
+            0.03 * Math.sin(7 * q - t * 1.7));
+        const x = size / 2 + Math.cos(a) * r;
+        const y = size / 2 + Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    };
+
+    const drawEdge = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(255, 106, 30, 0.16)';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.shadowColor = 'rgba(255, 110, 30, 0.95)';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = '#ffc995';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    };
+
+    const drawCorner = (p: { x: number; y: number; z: number }) => {
+      const r = 9 * (1 + p.z * 0.15);
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      g.addColorStop(0, 'rgba(255, 244, 220, 1)');
+      g.addColorStop(0.3, 'rgba(255, 170, 90, 0.8)');
+      g.addColorStop(1, 'rgba(255, 90, 31, 0)');
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    };
+
+    const drawBlob = (t: number, ry: number) => {
+      const c = size / 2;
+      const R = size * 0.2;
+      // Brillo exterior.
+      ctx.save();
+      ctx.shadowColor = 'rgba(255, 90, 31, 0.55)';
+      ctx.shadowBlur = size * 0.09;
+      blobPath(t, ry * 0.8);
+      // Centro rojo que se desplaza un poco; bordes naranja y amarillo.
+      const ox = Math.sin(t * 0.6) * R * 0.18;
+      const oy = Math.cos(t * 0.5) * R * 0.14;
+      const g = ctx.createRadialGradient(c + ox, c + oy, 0, c, c, R * 1.18);
+      g.addColorStop(0, '#c81e10');
+      g.addColorStop(0.35, '#f0461a');
+      g.addColorStop(0.58, '#ff7a1a');
+      g.addColorStop(0.78, '#ffb52a');
+      g.addColorStop(1, '#ffe05a');
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.restore();
+      // Vetas de lava más oscura que se mueven por dentro.
+      ctx.save();
+      blobPath(t, ry * 0.8);
+      ctx.clip();
+      for (let i = 0; i < 2; i++) {
+        const sx = c + Math.sin(t * (0.4 + i * 0.3) + i * 2) * R * 0.55;
+        const sy = c + Math.cos(t * (0.35 + i * 0.25) + i) * R * 0.5;
+        const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, R * 0.55);
+        sg.addColorStop(0, 'rgba(150, 18, 8, 0.45)');
+        sg.addColorStop(1, 'rgba(150, 18, 8, 0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(0, 0, size, size);
+      }
+      ctx.restore();
+    };
 
     // Interacción: giro solo, inclinación hacia el cursor y arrastre con impulso.
     const zone = host.closest<HTMLElement>('[data-cube-zone]') ?? host;
@@ -282,6 +202,7 @@
     host.addEventListener('pointerup', release);
     host.addEventListener('pointercancel', release);
 
+    let time = 0;
     let lastTime = performance.now();
     let visible = true;
     let frame = 0;
@@ -289,7 +210,7 @@
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
-      if (!reduceMotion.matches) uniforms.uTime.value += dt;
+      if (!reduceMotion.matches) time += dt;
       if (mode === 'auto') {
         ty += spin;
         spin *= 0.95;
@@ -299,8 +220,18 @@
       const ease = mode === 'drag' ? 0.35 : 0.08;
       rx += (tx - rx) * ease;
       ry += (ty - ry) * ease;
-      group.rotation.set(rx, ry, 0.1);
-      renderer.render(scene, camera);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      const pts = V.map((p) => project(p, rx, ry, 0.1));
+      const edges = EDGES.map(([a, b]) => ({ a: pts[a], b: pts[b], z: (pts[a].z + pts[b].z) / 2 }));
+      // Aristas de atrás, luego la masa, luego las de adelante.
+      edges.filter((e) => e.z < 0).forEach((e) => drawEdge(e.a, e.b));
+      pts.filter((p) => p.z < 0).forEach(drawCorner);
+      drawBlob(time, ry);
+      edges.filter((e) => e.z >= 0).forEach((e) => drawEdge(e.a, e.b));
+      pts.filter((p) => p.z >= 0).forEach(drawCorner);
+
       frame = visible ? requestAnimationFrame(tick) : 0;
     };
 
@@ -327,20 +258,10 @@
   .forge.dragging {
     cursor: grabbing;
   }
-  .forge :global(canvas) {
+  .forge canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-  }
-  .forge-fallback {
-    position: absolute;
-    inset: 25%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, #c81e10 0%, #ff6a14 55%, #ffd23a 100%);
-    box-shadow: 0 0 80px rgba(255, 90, 31, 0.35);
-  }
-  .forge.ready .forge-fallback {
-    display: none;
   }
 </style>
