@@ -26,6 +26,8 @@ const projects = defineCollection({
     name: z.string(),
     order: z.number().default(100),
     featured: z.boolean().default(false),
+    // 'menor': proyecto de ocio; va en "Otros proyectos" y no en el scroll principal.
+    tier: z.enum(['principal', 'menor']).default('principal'),
     category: z.enum(CATEGORIES),
     status: z.enum(['En producción', 'En desarrollo', 'Prototipo']),
     source: z.enum(['Personal', 'GG Forge']),

@@ -1,0 +1,91 @@
+{
+  "source": "Personal",
+  "featured": false,
+  "order": 10,
+  "tier": "menor",
+  "name": "ESO Trade Tracker: alertas de ofertas en el mercado de The Elder Scrolls Online",
+  "category": "Automatización e IA",
+  "status": "En producción",
+  "pitch": {
+    "general": "Un programa que vigila el mercado entre jugadores de The Elder Scrolls Online y avisa al momento, por Discord o Telegram, cuando alguien vende un objeto por debajo del precio que el usuario ha fijado, indicando precio, cantidad, vendedor y dónde está la tienda.",
+    "tecnica": "Scraper asíncrono en Python 3.12 que consulta periódicamente el sitio de precios del mercado del juego mediante dos rutas (peticiones HTTP a través de proxy residencial y un navegador Playwright local como respaldo), filtra ofertas por umbral y ahorro mínimo, las persiste en SQLite y notifica por Discord (API REST con botones de acción) y Telegram."
+  },
+  "problem": {
+    "general": "En el juego, los mejores precios aparecen y desaparecen en minutos. Encontrarlos obliga a revisar a mano, una y otra vez, el sitio donde se publican las ofertas de las tiendas de gremio.",
+    "tecnica": "El sitio de precios no ofrece notificaciones ni API pública documentada, aplica protección anti-bots con CAPTCHA y limita las consultas repetidas desde una misma IP, por lo que un sondeo ingenuo acaba bloqueado."
+  },
+  "solution": {
+    "general": "El usuario define una lista de objetos con el precio máximo que está dispuesto a pagar. El programa la revisa en ciclos, guarda cada oferta nueva y envía un aviso con los datos necesarios para ir a comprarla. Desde el propio mensaje se puede marcar como comprada para no volver a recibirla, y el escaneo se activa o detiene con un botón en Discord.",
+    "tecnica": "Ciclo asyncio que reparte los objetos entre un pipeline concurrente por proxy (httpx con keep-alive, semáforo y rotación de sesión) y un pipeline secuencial con Playwright que intercepta la respuesta JSON de la búsqueda, con tope por ciclo y paso automático al proxy si aparece un CAPTCHA. La ubicación de cada tienda se resuelve y cachea en SQLite (modo WAL). Las alertas se envían por HTTP a Discord; un bot con discord.py gestiona solo las interacciones de botones y un panel de control con ventana de activación temporal. Panel web en Flask para revisar las ofertas guardadas."
+  },
+  "result": {
+    "general": "Herramienta en uso personal que convierte una búsqueda manual constante en avisos automáticos, con la lista de objetos y precios ajustada de forma continua según el uso real.",
+    "tecnica": "Unas 4.600 líneas de Python que se ejecutan como proceso de escritorio en Windows. La lista de objetos se recarga en cada ciclo sin reiniciar y se valida con un script propio. El panel web está preparado en un contenedor Docker con Gunicorn. No incluye tests automatizados."
+  },
+  "role": "Proyecto personal de principio a fin: diseño, desarrollo y operación. Desarrollo asistido por agentes de IA, con reglas, guías de contexto y procedimientos para esos agentes mantenidos dentro del propio repositorio.",
+  "highlights": [
+    {
+      "general": "Cada aviso reúne todo lo necesario para actuar: precio por unidad, cantidad, ahorro respecto al precio fijado, gremio vendedor y ubicación de la tienda en el juego.",
+      "tecnica": "Alerta con hasta cinco ofertas por objeto, cálculo de ahorro y porcentaje bajo umbral, ubicación de la tienda resuelta y cacheada, botones para marcar una oferta como comprada, límite de avisos por objeto y día y registro diario en JSON de lo notificado."
+    },
+    {
+      "general": "Sigue funcionando aunque el sitio intente bloquear consultas automáticas: combina dos formas de acceso y reduce el ritmo cuando detecta problemas.",
+      "tecnica": "Ruta principal por proxy residencial con reintentos, timeouts y rotación de sesión; navegador Playwright con perfil persistente, user agent fijo, pausas aleatorias y tope por ciclo como último recurso; enfriamiento tras CAPTCHA, modo lento automático si el tráfico local supera un porcentaje y diagnóstico por ciclo de fallos y latencias."
+    },
+    {
+      "general": "La lista de objetos a vigilar es flexible: se puede buscar un objeto concreto, un nombre parcial o una categoría entera, con filtros de calidad, rasgo y nivel.",
+      "tecnica": "Tres modos de identificación excluyentes (identificador, patrón de nombre o solo filtros de categoría), filtros opcionales por calidad, rasgo, subcategoría y nivel, ahorro mínimo configurable por objeto y un validador de configuración que impide combinaciones inválidas."
+    }
+  ],
+  "skills": [
+    "Web scraping y automatización de navegador",
+    "Programación asíncrona",
+    "Integración de APIs de mensajería (Discord, Telegram)",
+    "Resiliencia ante bloqueos y reintentos",
+    "Persistencia de datos con SQLite",
+    "Desarrollo asistido por agentes de IA"
+  ],
+  "stack": [
+    "Python 3.12",
+    "asyncio",
+    "httpx",
+    "Playwright",
+    "Proxy residencial",
+    "SQLite",
+    "discord.py",
+    "API de bots de Telegram",
+    "Flask",
+    "Gunicorn",
+    "Docker"
+  ],
+  "milestones": [
+    {
+      "week": "2026-07-20",
+      "text": "Primera versión funcional: vigila una lista de objetos, detecta ofertas por debajo del precio fijado, las guarda y avisa por Discord; incluye un panel web para revisarlas. Primeros ajustes de la lista de objetos y limpieza de ofertas antiguas."
+    },
+    {
+      "week": "2026-07-27",
+      "text": "La lista de objetos se puede cambiar sin reiniciar el programa, se añade un ahorro mínimo para filtrar avisos poco interesantes y se unifican los avisos por Discord y Telegram. Arranque más robusto en Windows y guías de trabajo para los agentes de IA."
+    },
+    {
+      "week": "2026-08-03",
+      "text": "Filtro por rasgo del objeto, nuevos objetos vigilados y validación automática de la configuración antes de usarla."
+    },
+    {
+      "week": "2026-08-10",
+      "text": "Búsqueda por nombre parcial y por categorías completas, sin necesidad de conocer cada objeto concreto. Mejor reparto de consultas entre el navegador local y el proxy para evitar bloqueos."
+    },
+    {
+      "week": "2026-08-17",
+      "text": "Conexiones más estables con rotación periódica de sesión y registro diario de los objetos notificados."
+    },
+    {
+      "week": "2026-08-24",
+      "text": "Ajuste de precios objetivo y corrección en la validación de categorías."
+    },
+    {
+      "week": "2026-08-31",
+      "text": "Control desde Discord: el rastreador queda en reposo hasta que el usuario lo activa con un botón durante un tiempo limitado, con un mensaje fijo que muestra su estado y la cuenta atrás."
+    }
+  ]
+}

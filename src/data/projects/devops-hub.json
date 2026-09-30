@@ -2,6 +2,7 @@
   "source": "Personal",
   "featured": true,
   "order": 1,
+  "tier": "principal",
   "name": "DevOps Hub: centro de control de despliegues, clústeres y equipos",
   "category": "Infraestructura y DevOps",
   "status": "En producción",

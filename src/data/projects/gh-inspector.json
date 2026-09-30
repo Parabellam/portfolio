@@ -2,6 +2,7 @@
   "source": "GG Forge",
   "featured": false,
   "order": 2,
+  "tier": "principal",
   "name": "GH Inspector: auditor de código con IA para toda la empresa",
   "category": "Automatización e IA",
   "status": "En producción",

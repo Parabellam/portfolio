@@ -2,6 +2,7 @@
   "source": "GG Forge",
   "featured": false,
   "order": 5,
+  "tier": "principal",
   "name": "Asistente de búsqueda de empleo con aprobación humana",
   "category": "Automatización e IA",
   "status": "En desarrollo",

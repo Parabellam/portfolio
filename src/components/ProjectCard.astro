@@ -78,7 +78,8 @@ const short = (s: string) => s.replace(/\s*\(.*\)\s*$/, '');
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-  .pitch {
+  /* El párrafo lo pinta el componente Dual: sin :global este estilo no le llega. */
+  .card :global(.pitch) {
     margin: 0;
     color: var(--muted);
     flex: 1;

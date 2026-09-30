@@ -2,6 +2,7 @@
   "source": "GG Forge",
   "featured": false,
   "order": 4,
+  "tier": "principal",
   "name": "GG Forge Ops: la operación de una empresa automatizada sobre Discord",
   "category": "Automatización e IA",
   "status": "En producción",

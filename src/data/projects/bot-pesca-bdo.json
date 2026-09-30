@@ -1,0 +1,67 @@
+{
+  "source": "Personal",
+  "featured": false,
+  "order": 12,
+  "tier": "menor",
+  "name": "Bot de pesca para Black Desert Online: automatización guiada por visión por computadora",
+  "category": "Automatización e IA",
+  "status": "Prototipo",
+  "pitch": {
+    "general": "Experimento personal que automatiza la pesca del videojuego Black Desert Online: el programa mira la pantalla, reconoce en qué fase está la partida y pulsa las teclas que corresponden.",
+    "tecnica": "Aplicación de escritorio en Python que lee el estado del juego a partir de capturas de pantalla (coincidencia de plantillas con OpenCV y análisis de color por píxeles con NumPy) y controla teclado y ratón con keyboard y PyAutoGUI, orquestado como una máquina de estados en bucle."
+  },
+  "problem": {
+    "general": "La pesca en este juego es una tarea larga y repetitiva: esperar el aviso, completar un pequeño reto de teclas y decidir qué capturas guardar. Era un buen terreno para practicar automatización basada en lo que se ve en pantalla.",
+    "tecnica": "El juego no ofrece ninguna interfaz programática: el único estado disponible son los píxeles. Hay que reconocer avisos, leer una secuencia variable de teclas WASD, clasificar el botín por color y encadenar todo con tiempos fiables sobre una ventana que no controla el programa."
+  },
+  "solution": {
+    "general": "Una pequeña ventana con botones inicia un ciclo continuo: el programa detecta el aviso de pesca, lee la combinación de teclas que muestra el juego y la reproduce, confirma que la partida volvió a su estado normal y, al abrirse la ventana de botín, decide si guardar o descartar la captura según su color.",
+    "tecnica": "Interfaz Tkinter que lanza el ciclo en un hilo aparte; PyGetWindow activa la ventana del juego. Cada fase se detecta en regiones fijas de pantalla: avisos, menú y ventana de botín por localización de plantillas (PyScreeze con umbral de confianza); la secuencia de teclas por coincidencia de plantillas de OpenCV en escala de grises con varias plantillas por letra, leyendo de izquierda a derecha y excluyendo la zona ya procesada para no repetir letras; el tipo de captura por máscaras de rangos RGB y porcentaje de píxeles verdes o azules. Las teclas se envían con la librería keyboard con intervalos aleatorios y el ratón se desplaza por PyAutoGUI con trayectorias de varios tramos y curvas de aceleración variadas."
+  },
+  "result": {
+    "general": "El programa completa ciclos de pesca de principio a fin sin intervención y sirvió para aprender a reconocer imágenes en pantalla y a automatizar tareas en aplicaciones que no fueron pensadas para ello. Es un proyecto de uso personal, no pensado para distribuirse.",
+    "tecnica": "Unas 1.100 líneas de Python sin dependencias de servicios externos. Funciona sobre una resolución y disposición de interfaz concretas (regiones de captura fijas) y se calibró con capturas reales del juego; no tiene tests automatizados ni empaquetado. Incluye un modo de depuración que conserva capturas y registros solo de los ciclos fallidos."
+  },
+  "role": "Proyecto personal de ocio: diseño, desarrollo, captura de plantillas de referencia y calibración de colores y tiempos.",
+  "highlights": [
+    {
+      "general": "Lee una combinación de teclas que el juego muestra en pantalla, aunque cambie cada vez, y la reproduce en el orden correcto.",
+      "tecnica": "Lectura de la secuencia WASD por coincidencia de plantillas en OpenCV (correlación normalizada, umbral 0,8) con varias plantillas por letra para tolerar variaciones visuales, selección de la coincidencia más a la izquierda y exclusión progresiva de la zona ya leída para evitar duplicados."
+    },
+    {
+      "general": "Decide qué capturas conservar mirando el color de su recuadro, igual que lo haría una persona.",
+      "tecnica": "Localiza la zona de color de la ventana de botín por plantilla y calcula el porcentaje de píxeles que caen en una lista de rangos RGB calibrados (±15 por canal) para verde y azul; por encima del 40 % descarta, con plantillas de excepción y una regla por longitud de secuencia que fuerzan la recogida."
+    },
+    {
+      "general": "Incluye un modo de diagnóstico que guarda lo que el programa vio cuando algo falla, lo que facilitó ajustar la detección.",
+      "tecnica": "Gestor de depuración por ciclo: guarda recortes de pantalla y un registro paso a paso del reconocimiento de letras y del análisis de color, y los elimina automáticamente cuando el ciclo termina con éxito, conservando solo los casos a revisar."
+    }
+  ],
+  "skills": [
+    "Visión por computadora",
+    "Automatización de escritorio",
+    "Reconocimiento de imágenes por plantillas",
+    "Análisis de color",
+    "Depuración y calibración con datos reales"
+  ],
+  "stack": [
+    "Python",
+    "OpenCV",
+    "NumPy",
+    "PyAutoGUI / PyScreeze",
+    "keyboard",
+    "PyGetWindow",
+    "Pillow",
+    "Tkinter"
+  ],
+  "milestones": [
+    {
+      "week": "2025-09-29",
+      "text": "Se añadió un modo de diagnóstico que guarda capturas y registros de los ciclos fallidos, se mejoró la clasificación de capturas por color y se incluyó un lanzador que ejecuta la herramienta con los permisos necesarios."
+    },
+    {
+      "week": "2025-11-17",
+      "text": "Se ampliaron las imágenes de referencia para reconocer más variantes de la ventana de botín y se acortaron las esperas del ciclo para que responda más rápido."
+    }
+  ]
+}

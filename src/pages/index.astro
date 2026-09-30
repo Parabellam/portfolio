@@ -4,12 +4,16 @@ import Base from '../layouts/Base.astro';
 import Heatmap from '../components/Heatmap.astro';
 import ForgeCube from '../components/ForgeCube.astro';
 import ProjectsScroll from '../components/ProjectsScroll.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 import site from '../data/site.json';
 import { activeDays, mergeDays, projectDays, type Milestone } from '../lib/activity';
 
 const projects = (await getCollection('projects')).sort(
   (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order,
 );
+
+const main = projects.filter((p) => p.data.tier === 'principal');
+const others = projects.filter((p) => p.data.tier === 'menor');
 
 const allDays = mergeDays(projects.map((p) => projectDays(p.id)));
 const totalActive = activeDays(allDays);
@@ -62,7 +66,23 @@ const pad = (n: number) => String(n).padStart(2, '0');
     </dl>
   </section>
 
-  <ProjectsScroll projects={projects} />
+  <ProjectsScroll projects={main} />
+
+  {
+    others.length > 0 && (
+      <section class="wrap section" id="otros">
+        <div class="section-head">
+          <h2>Otros proyectos</h2>
+          <p class="muted">Proyectos más pequeños que hago por gusto: para aprender algo nuevo o resolver algo propio.</p>
+        </div>
+        <div class="others">
+          {others.map((p) => (
+            <ProjectCard project={p} />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   <section class="wrap section" id="actividad">
     <div class="section-head">
@@ -189,5 +209,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
     .stat-value {
       font-size: 2.25rem;
     }
+  }
+  .others {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 1rem;
   }
 </style>

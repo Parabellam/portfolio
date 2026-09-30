@@ -2,6 +2,7 @@
   "source": "GG Forge",
   "featured": false,
   "order": 3,
+  "tier": "principal",
   "name": "Cartógrafo: de la conversación en Discord a la especificación técnica",
   "category": "Automatización e IA",
   "status": "En producción",

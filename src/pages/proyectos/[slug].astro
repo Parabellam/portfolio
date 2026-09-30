@@ -29,7 +29,7 @@ const timeline = [...data.milestones].sort((a, b) => b.week.localeCompare(a.week
       <div class="meta">
         <span class="badge">{data.category}</span>
         <span class={`status ${data.status === 'En producción' ? 'live' : ''}`}>{data.status}</span>
-        <span class="muted">{data.source === 'GG Forge' ? 'Proyecto de GG Forge' : 'Proyecto personal'}</span>
+        <span class="muted">{data.source === 'GG Forge' ? 'Proyecto de GG Forge' : data.tier === 'menor' ? 'Proyecto personal de ocio' : 'Proyecto personal'}</span>
       </div>
       <h1>{data.name}</h1>
       <Dual value={data.pitch} as="p" class="lead" />

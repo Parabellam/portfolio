@@ -1,0 +1,73 @@
+{
+  "source": "Personal",
+  "featured": false,
+  "order": 11,
+  "tier": "menor",
+  "name": "Lockout: bloqueo de teclado y ratón en Windows con desbloqueo por combinación de teclas",
+  "category": "Seguridad",
+  "status": "Prototipo",
+  "pitch": {
+    "general": "Una pequeña herramienta para Windows que deja el computador sin respuesta al teclado y al ratón hasta que el usuario escribe una combinación secreta de teclas, acompañada de una interfaz de escritorio para activarla.",
+    "tecnica": "Proyecto en dos piezas: un ejecutable nativo en C++ con la API Win32 que intercepta todo el teclado y el ratón mediante hooks globales de bajo nivel y solo los libera al detectar una secuencia de desbloqueo, y una interfaz en Electron + React pensada para lanzarlo. La integración entre ambas quedó planteada pero sin completar."
+  },
+  "problem": {
+    "general": "Al apartarse un momento del computador, cualquiera puede tocar el teclado o el ratón. La idea era tener un bloqueo rápido, distinto del de la sesión, que se quite solo con una combinación de teclas que conoce el dueño.",
+    "tecnica": "Bloquear la entrada del usuario en todo el sistema, no solo en una ventana propia, exige interceptar los eventos antes de que lleguen a cualquier aplicación, reconocer una secuencia de teclas mientras el resto de la entrada se descarta y garantizar que el bloqueo se pueda deshacer sin dejar el equipo inutilizable."
+  },
+  "solution": {
+    "general": "Un programa nativo de Windows bloquea el teclado y el ratón en cuanto se abre y oculta el cursor; mientras tanto va leyendo lo que se teclea y, cuando reconoce la combinación correcta, devuelve el control. Una ventana pequeña permite volver a bloquear. Aparte se construyó una aplicación de escritorio con un diseño más cuidado y en varios idiomas, preparada para ser el punto de entrada.",
+    "tecnica": "El núcleo instala hooks con SetWindowsHookEx (WH_KEYBOARD_LL y WH_MOUSE_LL): el de ratón descarta todos los eventos y el de teclado consume cada pulsación devolviendo 1 mientras la acumula en un búfer normalizado (letras a minúscula, dígitos y operadores del teclado numérico). Al encontrar en el búfer una de las secuencias de desbloqueo, desinstala ambos hooks con UnhookWindowsHookEx y restaura el cursor. La interfaz es una app Electron (electron-vite) con ventana sin marco a lo ancho de la pantalla principal y renderer en React; el botón de bloqueo alterna el estado visual y la llamada al ejecutable nativo desde el renderer está escrita pero comentada, y el proceso principal solo expone un canal IPC de prueba."
+  },
+  "result": {
+    "general": "El bloqueo nativo funciona por sí solo. La aplicación de escritorio quedó como prototipo visual: todavía no activa el bloqueo real, porque la conexión entre las dos partes no llegó a terminarse.",
+    "tecnica": "Ejecutable Win32 funcional de unas 250 líneas de C++ y una interfaz Electron + React con i18n y empaquetado configurado para Windows, macOS y Linux. La comunicación entre ambas piezas no está implementada: el preload expone una API vacía y el último cambio de la interfaz se registró como previo a la integración."
+  },
+  "role": "Proyecto personal de ocio, desarrollado en solitario: diseño y programación del bloqueo nativo en C++ y de la interfaz de escritorio en Electron y React.",
+  "highlights": [
+    {
+      "general": "El bloqueo afecta a todo el computador, no solo a una ventana: ninguna aplicación recibe las teclas ni los movimientos del ratón hasta que se escribe la combinación correcta.",
+      "tecnica": "Hooks globales de bajo nivel de teclado y ratón que consumen los eventos en origen; la detección de la secuencia se hace sobre las pulsaciones interceptadas, normalizando códigos de tecla virtuales, y admite dos secuencias de desbloqueo alternativas."
+    },
+    {
+      "general": "Se cuidó no dejar el equipo a medio bloquear: si algo falla al activar el bloqueo, se deshace lo ya aplicado, y al desbloquear se devuelve todo a su estado normal.",
+      "tecnica": "Si la instalación del hook de ratón falla se desinstala el de teclado ya instalado; el desbloqueo libera ambos hooks, pasa la última pulsación a la cadena con CallNextHookEx y reactiva el cursor, y el rebloqueo desde la ventana reinicia el búfer de teclas."
+    },
+    {
+      "general": "La aplicación de escritorio está traducida a diez idiomas, detecta el idioma del sistema y recuerda la elección del usuario.",
+      "tecnica": "Internacionalización con i18next y react-i18next, detección por el idioma del navegador con persistencia en localStorage y selector en un carrusel Swiper dentro de un modal de NextUI; la lógica de cada vista está separada en un viewmodel (hooks de React) del componente que la pinta."
+    }
+  ],
+  "skills": [
+    "Programación de sistemas en Windows",
+    "Captura y gestión de entrada de teclado y ratón",
+    "Desarrollo de aplicaciones de escritorio",
+    "Desarrollo de interfaces con React",
+    "Internacionalización"
+  ],
+  "stack": [
+    "C++",
+    "Win32 API",
+    "Visual Studio",
+    "Electron",
+    "electron-vite",
+    "electron-builder",
+    "React",
+    "NextUI",
+    "Tailwind CSS",
+    "i18next",
+    "Swiper"
+  ],
+  "components": [
+    {
+      "name": "Motor de bloqueo nativo",
+      "general": "Programa de Windows que, al abrirse, bloquea el teclado y el ratón de todo el equipo y oculta el cursor hasta que se teclea la combinación de desbloqueo. Incluye una ventana con un botón para volver a bloquear.",
+      "tecnica": "Aplicación Win32 en C++ con bucle de mensajes estándar, hooks globales WH_KEYBOARD_LL y WH_MOUSE_LL, búfer de teclas normalizado con búsqueda de las secuencias de desbloqueo y botón de rebloqueo gestionado en el procedimiento de ventana."
+    },
+    {
+      "name": "Aplicación de escritorio",
+      "general": "Interfaz de escritorio con un botón de bloqueo, textos que se desvanecen al activarlo y un selector de idioma con diez opciones. Estaba pensada para lanzar el motor de bloqueo, pero esa conexión no llegó a completarse.",
+      "tecnica": "Electron con electron-vite: ventana sin marco dimensionada a partir del área de trabajo de la pantalla principal, preload con contextBridge y renderer en React con NextUI y Tailwind. El lanzamiento del ejecutable nativo desde el renderer quedó comentado y sin API expuesta en el preload."
+    }
+  ],
+  "milestones": []
+}
