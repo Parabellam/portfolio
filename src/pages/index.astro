@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Heatmap from '../components/Heatmap.astro';
-import LavaCube from '../components/LavaCube.astro';
+import ForgeCube from '../components/ForgeCube.astro';
 import ProjectsScroll from '../components/ProjectsScroll.astro';
 import site from '../data/site.json';
 import { activeDays, mergeDays, projectDays, type Milestone } from '../lib/activity';
@@ -44,7 +44,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
       </div>
     </div>
     <div class="hero-cube" data-cube-zone>
-      <LavaCube />
+      <ForgeCube />
     </div>
     <dl class="stats">
       <div class="stat">
