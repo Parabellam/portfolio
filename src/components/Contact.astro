@@ -32,7 +32,13 @@ const contacts = [
       {
         contacts.map((c) => (
           <li>
-            <a class="contact-card" href={c.href} {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}>
+            <a
+              class="contact-card"
+              href={c.href}
+              data-umami-event="contacto"
+              data-umami-event-canal={c.key}
+              {...(c.external ? { target: '_blank', rel: 'noopener' } : {})}
+            >
               <span class="contact-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[c.key]} />
               </span>

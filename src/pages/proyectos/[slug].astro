@@ -35,7 +35,7 @@ const timeline = [...data.milestones].sort((a, b) => b.week.localeCompare(a.week
       <Dual value={data.pitch} as="p" class="lead" />
       {
         data.demo && (
-          <a class="btn primary" href={data.demo.url} target="_blank" rel="noopener">
+          <a class="btn primary" href={data.demo.url} target="_blank" rel="noopener" data-umami-event="demo" data-umami-event-proyecto={project.id}>
             {data.demo.label} ↗
           </a>
         )

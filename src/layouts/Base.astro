@@ -25,6 +25,13 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.r
     <Font cssVariable="--font-display" preload={[{ weight: 900 }]} />
     <Font cssVariable="--font-mono" />
     <title>{pageTitle}</title>
+    <!-- Estadísticas de visitas con Umami: sin cookies, solo cuenta en el dominio publicado. -->
+    <script
+      is:inline
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="5c1c956e-96e1-444c-873b-274583dd06e1"
+      data-domains="portafolio-stiven-ruiz.up.railway.app"></script>
     <script is:inline>
       try {
         const v = localStorage.getItem('view');

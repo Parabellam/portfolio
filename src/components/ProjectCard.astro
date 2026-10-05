@@ -20,7 +20,7 @@ const short = (s: string) => s.replace(/\s*\(.*\)\s*$/, '');
     <span class="badge">{data.category}</span>
     <span class={`status ${data.status === 'En producción' ? 'live' : ''}`}>{data.status}</span>
   </div>
-  <h3><a href={`/proyectos/${project.id}`} class="stretched">{data.name}</a></h3>
+  <h3><a data-umami-event="ver-proyecto" data-umami-event-proyecto={project.id} data-umami-event-origen="otros" href={`/proyectos/${project.id}`} class="stretched">{data.name}</a></h3>
   <Dual value={data.pitch} as="p" class="pitch" />
   <ul class="chips" data-v="general">
     {data.skills.slice(0, 3).map((s) => <li>{short(s)}</li>)}

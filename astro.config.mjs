@@ -43,12 +43,16 @@ export default defineConfig({
         "default-src 'self'",
         "img-src 'self' data:",
         "font-src 'self'",
-        "connect-src 'self'",
+        // Umami (estadísticas de visitas): el script se carga de cloud y envía a gateway.
+        "connect-src 'self' https://gateway.umami.is",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
         "require-trusted-types-for 'script'",
       ],
+      scriptDirective: {
+        resources: ["'self'", 'https://cloud.umami.is'],
+      },
     },
   },
   vite: {
