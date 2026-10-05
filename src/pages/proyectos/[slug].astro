@@ -97,11 +97,11 @@ const timeline = [...data.milestones].sort((a, b) => b.week.localeCompare(a.week
       <div class="section-head">
         <h2>Actividad</h2>
         <p class="muted">
-          {total} {total === 1 ? 'día activo' : 'días activos'} en el último año · {relativeActivity(lastActivity(project.id))}
+          {total} {total === 1 ? 'día trabajado' : 'días trabajados'} en el último año · {relativeActivity(lastActivity(project.id))}
         </p>
       </div>
       <div class="panel">
-        <Heatmap days={days} milestones={data.milestones} weeks={26} label={`${total} días activos en ${data.name}`} />
+        <Heatmap days={days} milestones={data.milestones} weeks={26} label={`${total} días trabajados en ${data.name}`} />
       </div>
     </section>
 
