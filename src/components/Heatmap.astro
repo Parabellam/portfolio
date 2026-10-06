@@ -20,7 +20,9 @@ const columns = buildWeeks(days, weeks);
 
 const byWeek = new Map<string, Milestone[]>();
 for (const m of milestones) {
-  byWeek.set(m.week, [...(byWeek.get(m.week) ?? []), m]);
+  const list = byWeek.get(m.week);
+  if (list) list.push(m);
+  else byWeek.set(m.week, [m]);
 }
 
 // Etiqueta de mes en la primera semana de cada mes, solo si el mes ocupa
