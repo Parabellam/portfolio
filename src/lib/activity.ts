@@ -81,9 +81,10 @@ export function buildWeeks(days: DayMap, weeks = 53): { monday: string; cells: C
     const monday = new Date(lastMonday.getTime() - w * 7 * DAY);
     const cells: Cell[] = [];
     for (let i = 0; i < 7; i++) {
-      const date = format(new Date(monday.getTime() + i * DAY));
+      const day = new Date(monday.getTime() + i * DAY);
+      const date = format(day);
       const level = levelFor(days[date] ?? 0);
-      cells.push({ date, level, label: LEVEL_LABELS[level], future: parse(date) > end });
+      cells.push({ date, level, label: LEVEL_LABELS[level], future: day > end });
     }
     columns.push({ monday: format(monday), cells });
   }
