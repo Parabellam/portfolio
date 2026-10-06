@@ -28,18 +28,25 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
   let size = 0;
   let dpr = 1;
 
-  // Rotación, perspectiva y proyección a pantalla (z > 0 = más cerca).
-  const project = ([x0, y0, z0]: P3, rx: number, ry: number, rz: number): P2 => {
-    let x = x0 * Math.cos(ry) + z0 * Math.sin(ry);
-    let z = -x0 * Math.sin(ry) + z0 * Math.cos(ry);
-    let y = y0 * Math.cos(rx) - z * Math.sin(rx);
-    z = y0 * Math.sin(rx) + z * Math.cos(rx);
-    const t = x * Math.cos(rz) - y * Math.sin(rz);
-    y = x * Math.sin(rz) + y * Math.cos(rz);
-    x = t;
-    const s = 4.2 / (4.2 - z);
+  // Rotación, perspectiva y proyección a pantalla (z > 0 = más cerca). Los senos y cosenos se
+  // calculan una vez por cuadro y se reutilizan para los 8 vértices.
+  const projector = (rx: number, ry: number, rz: number) => {
+    const cosX = Math.cos(rx), sinX = Math.sin(rx);
+    const cosY = Math.cos(ry), sinY = Math.sin(ry);
+    const cosZ = Math.cos(rz), sinZ = Math.sin(rz);
+    const c = size / 2;
     const k = size * 0.25;
-    return { x: size / 2 + x * s * k, y: size / 2 + y * s * k, z };
+    return ([x0, y0, z0]: P3): P2 => {
+      let x = x0 * cosY + z0 * sinY;
+      let z = -x0 * sinY + z0 * cosY;
+      let y = y0 * cosX - z * sinX;
+      z = y0 * sinX + z * cosX;
+      const t = x * cosZ - y * sinZ;
+      y = x * sinZ + y * cosZ;
+      x = t;
+      const s = 4.2 / (4.2 - z);
+      return { x: c + x * s * k, y: c + y * s * k, z };
+    };
   };
 
   // Contorno de la masa: radio que ondula con varias frecuencias (lóbulos grandes y lisos).
@@ -146,7 +153,8 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
       ctx.clearRect(0, 0, size, size);
       // En pantalla Y apunta hacia abajo (al revés que en WebGL): los giros sobre X y Z se invierten
       // para que arrastrar y seguir el cursor se sientan igual que en la versión WebGL.
-      const pts = V.map((p) => project(p, -rx, ry, -0.1));
+      const project = projector(-rx, ry, -0.1);
+      const pts = V.map((p) => project(p));
       const edges = EDGES.map(([a, b]) => ({ a: pts[a], b: pts[b], z: (pts[a].z + pts[b].z) / 2 }));
       // Aristas de atrás, luego la masa, luego las de adelante.
       edges.filter((e) => e.z < 0).forEach((e) => drawEdge(e.a, e.b));
