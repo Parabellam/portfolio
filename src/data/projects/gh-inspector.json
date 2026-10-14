@@ -7,48 +7,49 @@
   "category": "Automatización e IA",
   "status": "En producción",
   "pitch": {
-    "general": "Un asistente automático que cada semana revisa todos los proyectos de la empresa, propone ideas, mejora el código y busca fallos de seguridad, dejando cada propuesta lista para que una persona la apruebe.",
-    "tecnica": "Orquestador en TypeScript sobre GitHub Actions que ejecuta Claude Code en modo headless y aislado sobre N repos, con control de presupuesto de uso, verificación en Docker y salida en PRs/issues de GitHub y resúmenes en Discord."
+    "general": "Un asistente automático que cada semana revisa los proyectos de la empresa, propone ideas, mejora el código y busca fallos de seguridad, y deja cada propuesta lista para que una persona la apruebe.",
+    "tecnica": "Orquestador en TypeScript sobre GitHub Actions que ejecuta Claude Code en modo headless y aislado sobre N repos, con control de cuota, escáneres de seguridad y verificación en Docker, y salida en PRs, issues, avisos privados y Discord."
   },
   "problem": {
     "general": "Una empresa pequeña con muchos proyectos no tiene tiempo para revisar cada semana la seguridad y la calidad de todo su código. Las revisiones se posponen y los problemas se acumulan sin que nadie los vea.",
-    "tecnica": "Auditar una docena de repos privados cada semana con un agente de IA implica tres riesgos: que el agente toque credenciales o infraestructura, que consuma toda la cuota de la suscripción y bloquee el trabajo diario, y que proponga cambios que rompen el build. Además, `claude -p` no expone el porcentaje de uso del plan, así que no había forma directa de limitar el gasto."
+    "tecnica": "Auditar una docena de repos, privados y públicos, cada semana con un agente de IA implica riesgos: que toque credenciales o infraestructura, que agote la cuota de la suscripción, que proponga cambios que rompen el build o que publique una vulnerabilidad en un repo abierto. `claude -p` no expone el uso del plan, y las horas programadas de GitHub se saltan a menudo."
   },
   "solution": {
-    "general": "El bot trabaja solo en horarios de madrugada y en un orden fijo: primero propone ideas, luego mejoras de código que comprueba antes de proponerlas y al final hace la auditoría de seguridad. Nunca aplica nada por su cuenta: abre propuestas que el dueño acepta o rechaza, y recuerda esas decisiones para no repetir lo rechazado. Para decidir qué repos revisar basta con pegar su enlace en un canal de Discord.",
-    "tecnica": "Un único orquestador con tres tareas (ideas, mejoras y seguridad) y ventanas horarias, topes de uso acumulado (60/70/80 % semanal y 80 % de la sesión de 5 horas) y colas semanales persistidas en el propio repo, con arrastre de pendientes y límite de intentos. El uso del plan se lee de la statusline de una sesión interactiva de Claude Code lanzada en un pseudo-terminal, y se vuelve a medir mientras el agente trabaja; si la lectura falla, el sistema se detiene (fail-closed). El agente no tiene shell ni red y solo usa herramientas de archivos limitadas al clon. Corre con un HOME efímero y sin tokens en su entorno, y el orquestador detecta si alguien alteró `.git`. Las mejoras se validan en contenedores Docker sin secretos, comparando cada cambio contra una línea base."
+    "general": "El bot trabaja de madrugada y en orden fijo: ideas, mejoras comprobadas y auditoría de seguridad. Nunca aplica nada por su cuenta: abre propuestas que el dueño acepta o rechaza, y recuerda esas decisiones. La auditoría usa guías de expertos y escáneres automáticos antes de que la IA opine. En proyectos públicos reporta en privado para no exponer fallos.",
+    "tecnica": "Un orquestador con tres tareas, ventanas horarias, topes de uso acumulado (60/70/80 % semanal y 80 % de la sesión de 5 h) y colas semanales persistidas. El uso se lee de la statusline de Claude Code en un pseudo-terminal, con fail-closed. En seguridad, el agente carga skills de ciberseguridad vendorizadas y recibe pistas de Semgrep, gitleaks y OSV-Scanner ejecutados en Docker sin secretos. En repos públicos crea avisos de seguridad en borrador en lugar de PRs. Autentica con una GitHub App de tokens de 1 hora."
   },
   "result": {
-    "general": "En su primera ejecución real revisó 12 proyectos de la empresa y abrió 11 propuestas de corrección de seguridad, de las cuales el dueño ya aceptó 5. Hoy la revisión semanal ocurre sola, sin gastar créditos de API y sin quitarle al dueño la cuota que necesita para su propio trabajo.",
-    "tecnica": "~4.500 líneas de TypeScript en `src/` y ~6.000 de pruebas; `tsc --noEmit` limpio y 431 pruebas Vitest en verde (29 archivos). CI en cada push/PR. Corrida programada del 26-09-2026: 12 repos auditados y 11 PRs en borrador con la etiqueta `security-audit` (5 fusionados, 1 abierto, el resto cerrados tras revisión). Las tareas de ideas y mejoras ya están integradas y probadas en corridas manuales, pero aún no han producido issues ni PRs."
+    "general": "En su primera ejecución real revisó 12 proyectos y abrió 11 propuestas de corrección de seguridad, de las cuales el dueño aceptó 5. Hoy la revisión semanal ocurre sola, sin gastar créditos de API y sin quitarle al dueño la cuota que necesita para su trabajo. Desde entonces se añadieron escáneres, avisos privados y mejor puntualidad.",
+    "tecnica": "Más de 450 casos de prueba Vitest en 33 archivos, con CI en cada push y PR. Corrida del 26-09-2026: 12 repos auditados y 11 PRs en borrador con la etiqueta de seguridad (5 fusionados, 1 abierto, el resto cerrados tras revisión). Ideas y mejoras están integradas y probadas en corridas manuales, pero aún no han producido issues ni PRs. Los escáneres, los avisos privados y la pausa son posteriores a esa corrida."
   },
   "role": "Diseño, especificación y desarrollo end-to-end (arquitectura, modelo de seguridad del agente, CI/CD y operación). El desarrollo se hizo con un flujo asistido por IA guiado por especificaciones y planes de implementación escritos que están versionados en el repo.",
   "highlights": [
     {
-      "general": "Diseñó un sistema para que la IA pueda revisar código privado sin poder acceder a contraseñas ni a la infraestructura de la empresa.",
-      "tecnica": "Sandbox por capas para el agente: sin Bash, WebFetch ni WebSearch; escritura solo dentro del clon y lectura bloqueada en procfs, sysfs y el directorio temporal del sistema. Usa un HOME efímero por ejecución y una allowlist de variables de entorno sin tokens de GitHub ni de Discord. Ignora los `.claude/` y `.mcp.json` del repo auditado y comprueba la integridad de `.git` con huellas antes de usar credenciales. Todo lo que sale del modelo pasa por un sanitizado de secretos y los PRs llevan `[skip ci]` para que no corra CI con secretos sobre código no revisado."
+      "general": "Diseñó un sistema para que la IA pueda revisar código privado sin acceso a contraseñas ni a la infraestructura de la empresa.",
+      "tecnica": "Sandbox por capas: el agente no tiene Bash ni red, solo herramientas de archivos limitadas al clon. Usa un HOME efímero y variables de entorno sin tokens, ignora la configuración del repo auditado, vigila la integridad de `.git` y sanea secretos en toda salida. Los tokens de la GitHub App duran 1 hora y los PRs llevan `[skip ci]` para no ejecutar CI con secretos sobre código sin revisar."
     },
     {
-      "general": "Hizo que el bot administre por sí solo el consumo de la suscripción de IA, para que nunca deje al equipo sin cuota.",
-      "tecnica": "Mide el uso semanal y el de la sesión de 5 horas leyendo la statusline de Claude Code en un pseudo-terminal, porque el modo `-p` no lo reporta, con un diagnóstico propio para calibrarlo. Aplica topes acumulados distintos por tarea y reserva margen para seguridad. Estima el gasto y la duración de cada repo con su historial y vuelve a medir durante la ejecución, cada pocos minutos. Si pierde la lectura, se detiene (fail-closed)."
+      "general": "La auditoría combina guías de expertos y detectores automáticos antes de pedir la opinión de la IA, lo que reduce falsas alarmas.",
+      "tecnica": "Skills de ciberseguridad con licencia abierta, fijadas en el repo, adaptadas a una sesión sin shell y nunca descargadas en la corrida. Antes del modelo corren Semgrep, gitleaks y OSV-Scanner en Docker de solo lectura y sin secretos; sus resultados son pistas que el modelo confirma antes de reportar. Un escáner caído no frena la auditoría y se avisa. Las dependencias de desarrollo se agrupan como baja severidad."
     },
     {
-      "general": "Las mejoras de código solo se proponen si se demuestra que no rompen nada.",
-      "tecnica": "Verificación en Docker con `--cap-drop ALL`, `no-new-privileges` y límites de memoria, CPU y PIDs, sobre una copia sin `.git` ni secretos. Detecta automáticamente proyectos Node (npm/pnpm/yarn), Python y Rust, o usa una receta propia por repo. Toma una línea base y solo abre el PR si todos los chequeos que pasaban siguen pasando; el PR incluye una tabla de antes y después. Nunca toca manifiestos, lockfiles, CI ni lógica de autenticación."
+      "general": "En proyectos públicos el bot reporta los fallos en privado, para no mostrarlos a terceros antes de arreglarlos.",
+      "tecnica": "Si el repo es público, seguridad no sube ramas ni abre issues o PRs: crea avisos de seguridad en borrador y publica el informe completo en Discord. Si no puede determinar la visibilidad del repo, falla en lugar de arriesgarse. Omite los repos archivados."
     },
     {
-      "general": "Todo pasa por una persona: el bot propone y el dueño decide, y el bot aprende de esas decisiones.",
-      "tecnica": "Memoria de propuestas sincronizada con el estado real de issues y PRs en GitHub (fusionado, cerrado como no planeado, etc.), con detección de similitud para no volver a proponer lo rechazado. Tiene modo dry-run, lista de repos gestionada desde Discord con usuarios y organizaciones permitidos, y un resumen en español por canal."
+      "general": "Administra solo el consumo de la suscripción de IA y no se salta horas ni gasta tiempo de más.",
+      "tecnica": "Mide el uso con un diagnóstico propio, aplica topes acumulados por tarea y vuelve a medir mientras el agente trabaja. Las horas programadas se disparan dos veces por hora en minutos de poco tráfico y un supervisor externo cubre las que GitHub omite. El sistema escribe una pausa persistida cuando ninguna hora haría trabajo útil. Elige entre un runner propio y uno de GitHub según un latido."
     },
     {
-      "general": "Construido con disciplina de ingeniería: cientos de pruebas automáticas y documentación de diseño.",
-      "tecnica": "431 pruebas Vitest, incluidas pruebas del propio workflow de GitHub Actions. Usa inyección de dependencias (spawn, clientes HTTP, verificador) para probar sin red, validación con Zod y cero dependencias de SDK: Discord y GitHub se consumen por REST con reintentos ante 429 y paginación. Tiene specs de diseño y planes de implementación versionados."
+      "general": "Las mejoras de código solo se proponen si se demuestra que no rompen nada, y toda decisión final la toma una persona.",
+      "tecnica": "Verificación en Docker con `--cap-drop ALL`, `no-new-privileges` y límites de recursos, con línea base y tabla de antes y después en cada PR. Detecta proyectos Node, Python y Rust o usa una receta propia. La memoria de propuestas se sincroniza con el estado real de issues y PRs para no repetir lo rechazado. Más de 450 casos de prueba, incluidos los del workflow."
     }
   ],
   "skills": [
     "Automatización de procesos",
     "Integración de IA generativa (agentes)",
     "Seguridad de aplicaciones y de la cadena de CI/CD",
+    "Auditoría de seguridad automatizada",
     "Integración de APIs (GitHub, Discord)",
     "DevOps con GitHub Actions",
     "Contenedores (Docker)",
@@ -62,9 +63,13 @@
     "Node.js 22",
     "Claude Code (CLI headless)",
     "GitHub Actions",
+    "GitHub App",
     "GitHub REST API",
     "Discord REST API",
     "Docker",
+    "Semgrep",
+    "gitleaks",
+    "OSV-Scanner",
     "Git",
     "Zod",
     "Vitest",
@@ -77,7 +82,15 @@
     },
     {
       "week": "2026-09-28",
-      "text": "El bot pasó a llamarse GH Inspector y sumó dos tareas nuevas: proponer ideas de producto y proponer mejoras de código que se prueban automáticamente antes de enviarse. Ahora recuerda qué propuestas se aceptaron o rechazaron, publica cada resumen en su propio canal y se corrigió la verificación de proyectos en Python."
+      "text": "El bot pasó a usar un modelo de IA más potente para mejoras y seguridad, y a autenticarse con credenciales que caducan cada hora en lugar de una clave fija. También se hizo más fiable el arranque de las revisiones programadas, que se disparan dos veces por hora y aceptan disparos externos."
+    },
+    {
+      "week": "2026-10-05",
+      "text": "La auditoría de seguridad ganó guías de expertos y detectores automáticos de fallos, secretos y dependencias vulnerables. En proyectos públicos ahora reporta en privado, y se omiten los repos archivados."
+    },
+    {
+      "week": "2026-10-12",
+      "text": "La auditoría y las pruebas automáticas pueden correr en un equipo propio cuando está disponible. El bot deja de lanzar horas que no harían nada, para no gastar minutos de ejecución, y la sonda de consumo pasó a un modelo más barato."
     }
   ]
 }

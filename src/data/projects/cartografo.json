@@ -15,61 +15,60 @@
     "tecnica": "El conocimiento de producto vive en cientos de mensajes no estructurados repartidos en hilos que Discord auto-archiva. Las herramientas de SDD (spec-kit, hello-sdd) asumen que un humano escribe la spec antes de programar; reconstruirla a partir de conversación, de forma trazable, incremental y sin que el modelo invente requisitos, no tiene solución estándar."
   },
   "solution": {
-    "general": "El bot revisa periódicamente los foros de cada producto, detecta historias de usuario, requisitos, decisiones, riesgos y preguntas abiertas, y redacta un documento vivo que publica en el propio Discord y guarda en GitHub. Nada entra sin enlace a su mensaje de origen, los puntos nunca se renumeran, y cuando dos personas se contradicen el bot lo señala en vez de decidir. Un responsable aprueba cada versión con un botón.",
-    "tecnica": "Dos procesos: un gateway siempre conectado (comandos slash /sdd, botones de aprobación, disparo por actividad) y un worker que ejecuta el pipeline como proceso hijo. Pipeline: descubrimiento (la jerarquía categoría → foro → publicación de Discord es la configuración), ingesta con cursores por hilo basados en snowflakes, prefiltro determinista, MAP con Claude Haiku por ventanas acotadas, REDUCE con Claude Opus sobre afirmaciones estructuradas (nunca mensajes crudos), validación en dos fases (EARS por regex, citas verificadas contra los message_ids enviados, alcance de canales, frontmatter YAML), reconciliación append-only y outbox transaccional en SQLite con entrega idempotente a Discord y a GitHub (Octokit). Cadena de proveedores LLM configurable con respaldo (Anthropic, Groq, Gemini, Mistral, OpenRouter, Together, Hugging Face y el CLI de Claude Code en sandbox), reintento con backoff y tope de presupuesto en USD."
+    "general": "El bot revisa periódicamente los foros de cada producto, detecta historias de usuario, requisitos, decisiones, riesgos y preguntas abiertas, y redacta un documento vivo que publica en Discord y guarda en GitHub. Nada entra sin enlace a su mensaje de origen, los puntos nunca se renumeran y, cuando dos personas se contradicen, el bot lo señala en vez de decidir. Un responsable aprueba cada versión con un botón.",
+    "tecnica": "Dos procesos: un gateway siempre conectado (comandos slash, botones de aprobación, disparo por actividad) y un worker lanzado como proceso hijo, ambos sobre JavaScript compilado. Pipeline: descubrimiento (la jerarquía de Discord es la configuración), ingesta con cursores por hilo, prefiltro determinista, MAP con Claude Haiku por ventanas, REDUCE con Claude Opus sobre afirmaciones estructuradas, validación en dos fases (EARS, citas verificadas, alcance de canales), reconciliación append-only y outbox transaccional en SQLite con entrega idempotente a Discord y a GitHub mediante una GitHub App."
   },
   "result": {
-    "general": "El equipo obtiene una especificación del producto siempre actualizada, revisable y aprobada en Discord, sin que nadie tenga que redactarla a mano. El repositorio contiene ya varias versiones aprobadas de la especificación de un producto piloto generadas por el propio bot.",
-    "tecnica": "MVP desplegado en Railway (Railpack/Nixpacks con volumen persistente) que ha producido y commiteado versiones v0 a v3 de una spec real con historias de usuario, requisitos EARS, ADRs y preguntas abiertas trazables. ~7.000 líneas de TypeScript de producción acompañadas de ~6.400 líneas de tests (37 ficheros Vitest, del orden de 490 casos) que se ejecutan sin red; `npm run build` es comprobación de tipos estricta."
+    "general": "El equipo obtiene una especificación del producto siempre actualizada, revisable y aprobada en Discord, sin que nadie tenga que redactarla a mano. El repositorio contiene varias versiones de la especificación de un producto piloto generadas por el propio bot, incluidas correcciones aplicadas tras la revisión del equipo.",
+    "tecnica": "Desplegado en Railway con volumen persistente. Ha producido y commiteado varias versiones de una spec real (historias de usuario, requisitos EARS, ADRs, preguntas abiertas), incluida una corrección que retiró como obsoletos los elementos publicados por error. Unos 40 ficheros de tests Vitest que se ejecutan sin red; `npm run build` compila con comprobación estricta de tipos y es lo que corre en producción."
   },
-  "role": "Diseño y desarrollo end-to-end: documento de diseño, plan de implementación, arquitectura, código, tests, despliegue en Railway y operación del bot en el servidor de GG Forge. Desarrollo asistido por agentes de IA (Claude Code) con revisión propia.",
+  "role": "Diseño y desarrollo end-to-end: documento de diseño, plan de implementación, arquitectura, código, tests, despliegue en Railway y operación del bot en el servidor de GG Forge, incluida la migración a credenciales de GitHub de mínimo privilegio. Desarrollo asistido por agentes de IA (Claude Code) con revisión propia.",
   "highlights": [
     {
-      "general": "Cada punto del documento enlaza al mensaje exacto donde se dijo; lo que no se puede rastrear no se publica. Así se evita que la IA se invente requisitos.",
-      "tecnica": "Trazabilidad obligatoria como defensa anti-alucinación: los message_ids citados por el modelo se validan contra los de la ventana enviada, las afirmaciones con fuentes inventadas o de canales fuera de alcance se descartan y se cuentan en el informe, y un descarte masivo (>1 elemento y >30%) aborta la publicación."
+      "general": "Cada punto del documento enlaza al mensaje exacto donde se dijo; lo que no se puede rastrear no se publica. Así se evita que la IA se invente requisitos, y las tareas del equipo no se confunden con requisitos del producto.",
+      "tecnica": "Trazabilidad obligatoria como defensa anti-alucinación: los message_ids citados se validan contra los de la ventana enviada, las afirmaciones con fuentes inventadas o fuera de alcance se descartan y se cuentan en el informe, y un descarte masivo aborta la publicación. Los prompts distinguen trabajo del equipo de comportamiento del producto, y existe un mecanismo de corrección que retira elementos como obsoletos, una sola vez y sin borrar."
     },
     {
       "general": "Si algo falla a mitad (la IA, Discord o GitHub), no se pierde trabajo ni se paga dos veces: el bot reintenta lo pendiente en la siguiente ejecución.",
-      "tecnica": "Outbox transaccional en SQLite: reconciliación, cursores, render y estado se confirman en una única transacción por producto y la entrega a Discord/Git es un paso idempotente posterior. Cerrojo con arrendamiento (latido) entre procesos, cursores que solo avanzan hasta la última ventana procesada con éxito y detección explícita del intent MessageContent desactivado para no marcar como leído un histórico vacío."
+      "tecnica": "Outbox transaccional en SQLite: reconciliación, cursores, render y estado se confirman en una única transacción por producto y la entrega a Discord/Git es un paso idempotente posterior. Cerrojo con arrendamiento entre procesos, cursores que solo avanzan hasta la última ventana procesada con éxito y detección explícita del intent MessageContent desactivado para no marcar como leído un histórico vacío."
     },
     {
-      "general": "No depende de un único proveedor de IA: si uno se cae o se queda sin saldo, pasa automáticamente al siguiente y controla el gasto con un presupuesto máximo.",
-      "tecnica": "Cadena de proveedores configurable desde Discord (Anthropic con salida estructurada nativa, varios proveedores compatibles con la API de OpenAI validados con Zod, y el CLI de Claude Code aislado sin herramientas, sin MCP, con HOME temporal y sin secretos en su entorno), backoff exponencial sobre la cadena completa, streaming en la síntesis y contador de coste con corte duro."
+      "general": "No depende de un único proveedor de IA ni de pagar por uso: puede aprovechar una suscripción ya contratada, pasa solo al siguiente proveedor si uno falla y limita el gasto con un presupuesto máximo.",
+      "tecnica": "Cadena de proveedores reordenable desde Discord: el plan de suscripción de Claude (CLI de Claude Code con Haiku) puede ir primero, seguido de Anthropic por API con salida estructurada nativa y de proveedores compatibles con OpenAI validados con Zod. El CLI corre aislado: sin herramientas ni MCP, con HOME temporal y sin secretos en su entorno. Backoff sobre la cadena completa, streaming en la síntesis y corte duro por presupuesto en USD."
     },
     {
-      "general": "Añadir un producto nuevo es tan simple como crear un foro en Discord: no hay que tocar código ni archivos de configuración.",
-      "tecnica": "La estructura de Discord es el modelo de datos: el producto se identifica por el channel_id del foro (renombrar o mover de categoría no rompe su identidad), las secciones se reconocen por título normalizado con alias y degradación segura, y toda la operación se gestiona con comandos slash; en .env solo hay secretos."
+      "general": "El acceso a GitHub sigue el principio de mínimo privilegio: el bot solo puede escribir en el repositorio de especificaciones y con credenciales que caducan en una hora.",
+      "tecnica": "Autenticación con una GitHub App: cada petición Octokit lleva un token de instalación de 1 h, acotado a un único repositorio y al permiso de escritura de contenidos, renovado automáticamente. El token fijo queda solo como alternativa de migración."
     },
     {
-      "general": "Los requisitos se escriben en un formato estándar y comparable, con identificadores que nunca cambian, lo que permite ver con claridad qué cambió entre versiones.",
-      "tecnica": "Requisitos funcionales en notación EARS en español (cinco patrones validables por regex), IDs estables tipo US-001/RF-001 nunca renumerados, elementos retirados marcados como obsoletos con lápida, conflictos expuestos sin arbitrar y aprobación ligada al hash del markdown efectivamente publicado."
+      "general": "Añadir un producto nuevo es tan simple como crear un foro en Discord: no hay que tocar código ni archivos de configuración. Los requisitos usan un formato estándar con identificadores que nunca cambian.",
+      "tecnica": "La estructura de Discord es el modelo de datos: el producto se identifica por el channel_id del foro y las secciones por título normalizado con alias. Requisitos en notación EARS en español (cinco patrones validables por regex), IDs estables US-001/RF-001 nunca renumerados, obsoletos con lápida, conflictos expuestos sin arbitrar y aprobación ligada al hash del markdown publicado."
     }
   ],
   "skills": [
     "Automatización de procesos con IA",
-    "Integración de APIs (Discord, Anthropic, OpenAI-compatibles, GitHub)",
+    "Integración de APIs (Discord, GitHub, proveedores de IA)",
     "Diseño de arquitectura y documentación técnica",
     "Ingeniería de prompts y salidas estructuradas",
     "Control de costes en servicios de IA",
     "Tolerancia a fallos e idempotencia",
     "Testing automatizado",
     "Despliegue en la nube",
-    "Seguridad y aislamiento de procesos",
-    "Gestión de requisitos (Spec-Driven Development, EARS)"
+    "Seguridad y mínimo privilegio",
+    "Gestión de requisitos (Spec-Driven Development)"
   ],
   "stack": [
     "TypeScript",
     "Node.js 22",
     "discord.js",
     "Anthropic SDK (Claude Haiku / Opus)",
-    "OpenAI SDK (Groq, Gemini, Mistral, OpenRouter, Together, Hugging Face)",
+    "OpenAI SDK (Groq, Gemini, Mistral, OpenRouter, Hugging Face)",
     "Claude Code CLI",
     "SQLite (better-sqlite3)",
-    "Octokit (GitHub API)",
+    "Octokit y GitHub App",
     "Zod",
     "unpdf",
     "Vitest",
-    "tsx",
     "Railway (Railpack / Nixpacks)",
     "systemd"
   ],
@@ -81,6 +80,14 @@
     {
       "week": "2026-09-21",
       "text": "Uso real y mejoras: lectura de documentos adjuntos (texto y PDF), ejecución automática unas horas después de la actividad del equipo, control total del orden de proveedores de IA, opción de usar la suscripción de Claude en lugar de pagar por uso, nuevas versiones aprobadas de la especificación piloto y traspaso del proyecto a la organización GG Forge."
+    },
+    {
+      "week": "2026-09-28",
+      "text": "Se corrigió el criterio de la IA para que las tareas del equipo no se publiquen como requisitos del producto, y se retiraron las ya publicadas por error. También se reforzó la seguridad del acceso a GitHub con una aplicación de permisos mínimos y se generaron nuevas versiones de la especificación piloto."
+    },
+    {
+      "week": "2026-10-05",
+      "text": "Se redujo el coste y el consumo del servicio: la suscripción de Claude pasa a ser la primera opción, se actualizaron los modelos de IA y el bot arranca con el código ya compilado, ocupando unos 40 MB menos de memoria. Además se retiró un proveedor de respaldo sin crédito."
     }
   ]
 }
