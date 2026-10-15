@@ -136,7 +136,7 @@
     },
     {
       "week": "2026-10-12",
-      "text": "Ajuste fino en los procesos programados del Capataz: ya no lanza una revisión automática cuando esta está en pausa y no haría nada."
+      "text": "Mantenimiento del inventario de claves de acceso: se retira la de un proveedor de IA que ya se había eliminado, para que el registro refleje solo las credenciales vigentes. Además, el Capataz ya no lanza una revisión automática cuando esta está en pausa y no haría nada."
     }
   ]
 }

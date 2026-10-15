@@ -7,20 +7,20 @@
   "category": "Automatización e IA",
   "status": "En desarrollo",
   "pitch": {
-    "general": "Un asistente que encuentra ofertas que encajan con tu perfil y prepara las postulaciones, pero la última palabra es siempre tuya: nada se envía sin que lo revises y apruebes.",
-    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y un backend cloud en Railway) que asiste la búsqueda, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana obligatoria antes de cada envío."
+    "general": "Un asistente que encuentra ofertas que encajan con tu perfil y prepara las postulaciones, pero la última palabra es siempre tuya: tú revisas y apruebas antes de enviar.",
+    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y backend cloud en Railway) que asiste la búsqueda en siete portales, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana antes de cada envío."
   },
   "problem": {
     "general": "Buscar empleo implica revisar decenas de ofertas en varios portales y responder una y otra vez las mismas preguntas en cada formulario. Es repetitivo, consume horas y es fácil postularse a vacantes que no encajan con tu perfil.",
-    "tecnica": "Cada portal (LinkedIn, Computrabajo, Magneto, Get on Board) tiene su propio flujo, formato y API no documentada, y sus formularios mezclan texto libre, listas, opciones y autocompletados. Automatizarlo exige manejar sesiones reales de forma segura, no inventar respuestas y no poner en riesgo la cuenta del usuario."
+    "tecnica": "Cada portal (LinkedIn, Computrabajo, Magneto, Get on Board, ticjob, Indeed, Upwork) tiene su propio flujo, formato y API no documentada, y los formularios de las empresas son heterogéneos y a veces hostiles. Asistirlo exige manejar sesiones reales con seguridad, no inventar respuestas y no poner en riesgo la cuenta del usuario."
   },
   "solution": {
-    "general": "El asistente busca ofertas según tus preferencias, descarta las que no encajan (idioma, modalidad, tecnologías, salario) y prepara cada postulación con una base de respuestas que aprende de ti. Cuando no sabe algo te lo pregunta en vez de inventarlo, y se detiene antes de enviar para que revises y apruebes. Funciona como app de escritorio y desde el celular puedes revisar y aprobar.",
-    "tecnica": "Un backend NestJS local (SQLite/TypeORM con migraciones) orquesta adaptadores por plataforma: automatización de navegador con Playwright para LinkedIn, HTTP + parseo HTML para Computrabajo y consumo de APIs JSON para Magneto y Get on Board. Un resolvedor de autocompletado en tres capas (coincidencia exacta, emparejamiento semántico e IA redactora limitada al perfil real) usa una cadena de fallback entre 7 proveedores de IA más un modelo de clasificación tipada vía AI Gateway; las decisiones críticas las toma código determinista, no el modelo. Tauri v2 empaqueta frontend y backend como instalador de escritorio, y un servicio cloud NestJS + PostgreSQL en Railway aporta cuentas (Auth0), suscripción (Paddle), sincronización last-write-wins y una cola de comandos cifrada para el control remoto."
+    "general": "El asistente busca ofertas en siete portales según tus preferencias, descarta las que no encajan (idioma, modalidad, tecnologías, cargo, salario) y prepara cada postulación con una base de respuestas que aprende de ti. Si no sabe algo te pregunta en vez de inventarlo. En los sitios propios de las empresas puede llenar el formulario paso a paso, pero por defecto se detiene en \"Listo para enviar\" para que lo revises y envíes tú. También recomienda respuestas en pruebas previas al empleo, y tú decides. Funciona en el PC y desde el celular puedes revisar y aprobar.",
+    "tecnica": "Backend NestJS local (SQLite/TypeORM con migraciones) con adaptadores por portal: Playwright para LinkedIn, HTTP + HTML para Computrabajo, APIs JSON para Magneto y Get on Board, y búsqueda en ticjob, Indeed y Upwork. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 7 proveedores de IA y clasificación tipada; las decisiones críticas son código determinista. Un agente para sitios externos usa guardas sin IA (captcha, login, oferta cerrada, salida de dominio) y la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio; un servicio NestJS + PostgreSQL en Railway aporta Auth0, Paddle, sincronización last-write-wins y relay cifrado de punta a punta."
   },
   "result": {
-    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular, con filtros que evitan perder tiempo en vacantes que no encajan y protecciones que reducen el riesgo de bloqueos en los portales.",
-    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, API cloud) y unas 42 mil líneas de TypeScript de producción; alrededor de 2.570 casos de prueba en 168 archivos (Vitest) y 4 workflows de GitHub Actions (lint, typecheck, unitarias, e2e, integración contra Postgres efímero, APK firmado y paquete .deb). 429 commits y 26 PRs en dos semanas, con specs y planes de diseño por funcionalidad."
+    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos en los portales.",
+    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, API cloud) y 5 workflows de GitHub Actions: lint, typecheck, pruebas unitarias, e2e, integración con Postgres efímero, APK firmado y paquete .deb, con runner propio y respaldo en GitHub. Cerca de 3.900 casos de prueba en más de 230 archivos. Más de 600 commits y más de 80 PRs en aproximadamente un mes, con specs y planes de diseño por funcionalidad."
   },
   "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube, app móvil/web, empaquetado de escritorio, CI/CD, despliegue y documentación.",
   "highlights": [
@@ -29,20 +29,20 @@
       "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust), Expo Router/React Native Paper para web y Android, y una API NestJS + PostgreSQL desplegada en Railway con migraciones versionadas."
     },
     {
-      "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y siempre pide confirmación antes de enviar una postulación real.",
-      "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada (sí/no, elegir opción) sobre claves que define el código, mitigación de prompt injection en el emparejamiento de respuestas y un freno de envío automático bloqueado hasta la primera revisión humana."
+      "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y, por defecto, se detiene antes de enviar para que la persona revise y apruebe.",
+      "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto, y el envío automático está apagado y bloqueado hasta la primera revisión humana."
     },
     {
-      "general": "El celular funciona como control remoto del PC: puedes iniciar búsquedas, ver el progreso en vivo y aprobar postulaciones, incluso si el PC se conecta más tarde.",
-      "tecnica": "Sincronización last-write-wins por registro con lápidas y cursor de secuencia, canal WebSocket con handshake autenticado, espejo del estado del PC principal y cola de comandos cifrada (AES-GCM) con toma atómica, expiración y ejecución exactamente una vez mediante un registro local."
+      "general": "El celular funciona como control remoto del PC: inicia búsquedas, muestra el progreso en vivo y permite aprobar postulaciones. También puede conectar las cuentas de los portales viendo la pantalla del PC.",
+      "tecnica": "Sincronización last-write-wins por registro con lápidas, canal WebSocket autenticado y cola de comandos cifrada con ejecución exactamente una vez. El emparejamiento por QR y el relay de pantalla remota (screencast CDP) van cifrados de punta a punta, y el servidor solo reenvía bytes opacos."
     },
     {
       "general": "Cuida la seguridad de las cuentas y los datos del usuario: las credenciales se guardan en el almacén seguro del sistema operativo y la app se detiene sola si un portal muestra señales de sospecha.",
-      "tecnica": "Secretos en el llavero del SO (troceados para superar el límite de Windows), API local solo por loopback con token Bearer, login OAuth con PKCE y guard RS256, webhooks de Paddle con HMAC sobre el cuerpo crudo y deduplicación, CSP estricta, helmet y rate limiting; topes diarios por plataforma y detención ante 429/403, sesión vencida o texto de sospecha."
+      "tecnica": "Secretos en el llavero del SO (troceados para superar el límite de Windows), API local solo por loopback con token Bearer, login OAuth con PKCE y guard RS256, webhooks de Paddle con HMAC y deduplicación, CSP estricta y rate limiting. Topes diarios por plataforma y detención ante 429/403, sesión vencida o texto de sospecha."
     },
     {
-      "general": "Trabaja con estándares profesionales de calidad: miles de pruebas automáticas y revisiones en cada entrega.",
-      "tecnica": "Cerca de 2.570 casos de prueba (unitarias, e2e e integración con Postgres real en CI), typecheck y lint en CI, flujo de PRs con rondas de revisión documentadas, y documentos de diseño y plan de implementación por cada funcionalidad."
+      "general": "Está pensado para no fallar a mitad de camino: un problema en una oferta o un portal no corta la búsqueda, y cada corrida deja un registro claro de lo que pasó.",
+      "tecnica": "Aislamiento de fallos por oferta y por plataforma, renovación automática de la sesión de Magneto, reintentos que no gastan intentos de IA ante cortes de red, registro de corridas en archivo y aviso de búsquedas programadas perdidas. Se apoya en una suite de unas 3.900 pruebas y revisiones de PR en cada entrega."
     }
   ],
   "skills": [
@@ -53,12 +53,11 @@
     "Inteligencia artificial aplicada (LLMs)",
     "Automatización de navegador",
     "Desarrollo de apps móviles y de escritorio",
-    "Arquitectura de sistemas distribuidos y sincronización",
-    "Seguridad de aplicaciones y manejo de credenciales",
-    "Autenticación y pagos (OAuth, suscripciones)",
+    "Arquitectura de sistemas distribuidos",
+    "Seguridad y manejo de credenciales",
+    "Autenticación y pagos",
     "Pruebas automatizadas",
-    "CI/CD y despliegue en la nube",
-    "Documentación técnica"
+    "CI/CD y despliegue en la nube"
   ],
   "stack": [
     "TypeScript",
@@ -71,7 +70,6 @@
     "Cheerio",
     "React Native",
     "Expo",
-    "Expo Router",
     "React Native Paper",
     "Zustand",
     "i18next",
@@ -81,7 +79,7 @@
     "Auth0 (OAuth 2.0 + PKCE)",
     "Paddle",
     "Vercel AI SDK / AI Gateway",
-    "APIs de LLM (OpenAI-compatible, Anthropic, Gemini, Groq, Mistral y otros)",
+    "APIs de LLM (Anthropic, Gemini, Groq, Mistral)",
     "Zod",
     "Vitest",
     "GitHub Actions",
@@ -99,7 +97,15 @@
     },
     {
       "week": "2026-09-28",
-      "text": "Más portales y más control: integración con Get on Board, lista de ofertas para postular a mano, filtro por títulos de cargo deseados, botón \"Ya apliqué\" y un análisis más robusto de las ofertas de Computrabajo."
+      "text": "Primer agente para sitios de empresas: cuando una oferta lleva a la página propia de la empresa, el asistente puede recorrer el formulario y dejarlo listo para que el usuario lo revise y envíe, deteniéndose ante inicios de sesión o verificaciones. También se añadió la conexión de la cuenta de Get on Board."
+    },
+    {
+      "week": "2026-10-05",
+      "text": "Tres portales nuevos de búsqueda (Indeed, Upwork y ticjob), alerta cuando vence la sesión de un portal y filtro que salta ofertas cuya tecnología principal el usuario no maneja. Se creó un asistente para pruebas previas al empleo que recomienda respuestas, y ahora se pueden conectar cuentas desde el celular viendo la pantalla del PC."
+    },
+    {
+      "week": "2026-10-12",
+      "text": "Semana de robustez: la sesión de Magneto se renueva sola, un fallo en una oferta o un portal ya no corta la búsqueda y un corte de internet no gasta intentos de la IA. Cada corrida deja un registro completo, hay aviso de búsquedas programadas perdidas y la integración continua cuenta con un equipo propio de respaldo."
     }
   ]
 }
