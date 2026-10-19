@@ -19,26 +19,26 @@
     "tecnica": "Backend NestJS local (SQLite/TypeORM con migraciones) con adaptadores por portal: Playwright para LinkedIn, HTTP + HTML para Computrabajo, APIs JSON para Magneto y Get on Board, y búsqueda en ticjob, Indeed y Upwork. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 7 proveedores de IA y clasificación tipada; las decisiones críticas son código determinista. Un agente para sitios externos usa guardas sin IA (captcha, login, oferta cerrada, salida de dominio) y la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio; un servicio NestJS + PostgreSQL en Railway aporta Auth0, Paddle, sincronización last-write-wins y relay cifrado de punta a punta."
   },
   "result": {
-    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos en los portales.",
-    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, API cloud) y 5 workflows de GitHub Actions: lint, typecheck, pruebas unitarias, e2e, integración con Postgres efímero, APK firmado y paquete .deb, con runner propio y respaldo en GitHub. Cerca de 3.900 casos de prueba en más de 230 archivos. Más de 600 commits y más de 80 PRs en aproximadamente un mes, con specs y planes de diseño por funcionalidad."
+    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos. La app de escritorio ya avisa de versiones nuevas y se actualiza de forma segura cuando el usuario lo decide.",
+    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, API cloud) y 5 workflows de GitHub Actions: lint, typecheck, pruebas unitarias, e2e, integración con Postgres efímero, APK firmado y paquete .deb, con runner propio y respaldo en GitHub. Actualizador del escritorio con instaladores firmados y publicación por script verificado. Cerca de 3.900 casos de prueba en más de 230 archivos. Más de 600 commits y cerca de 90 PRs en aproximadamente un mes, con specs y planes de diseño por funcionalidad."
   },
-  "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube, app móvil/web, empaquetado de escritorio, CI/CD, despliegue y documentación.",
+  "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube, app móvil/web, empaquetado de escritorio, CI/CD, despliegue, publicación de versiones y documentación.",
   "highlights": [
     {
       "general": "Construyó solo un producto completo que funciona en escritorio (Windows y Linux), web y Android, con un servicio en la nube para cuentas y suscripciones.",
-      "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust), Expo Router/React Native Paper para web y Android, y una API NestJS + PostgreSQL desplegada en Railway con migraciones versionadas."
+      "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust) con actualizador integrado, Expo Router/React Native Paper para web y Android, y una API NestJS + PostgreSQL desplegada en Railway con migraciones versionadas."
     },
     {
       "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y, por defecto, se detiene antes de enviar para que la persona revise y apruebe.",
-      "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto, y el envío automático está apagado y bloqueado hasta la primera revisión humana."
+      "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto; el envío automático está apagado y bloqueado hasta la primera revisión humana."
     },
     {
       "general": "El celular funciona como control remoto del PC: inicia búsquedas, muestra el progreso en vivo y permite aprobar postulaciones. También puede conectar las cuentas de los portales viendo la pantalla del PC.",
       "tecnica": "Sincronización last-write-wins por registro con lápidas, canal WebSocket autenticado y cola de comandos cifrada con ejecución exactamente una vez. El emparejamiento por QR y el relay de pantalla remota (screencast CDP) van cifrados de punta a punta, y el servidor solo reenvía bytes opacos."
     },
     {
-      "general": "Cuida la seguridad de las cuentas y los datos del usuario: las credenciales se guardan en el almacén seguro del sistema operativo y la app se detiene sola si un portal muestra señales de sospecha.",
-      "tecnica": "Secretos en el llavero del SO (troceados para superar el límite de Windows), API local solo por loopback con token Bearer, login OAuth con PKCE y guard RS256, webhooks de Paddle con HMAC y deduplicación, CSP estricta y rate limiting. Topes diarios por plataforma y detención ante 429/403, sesión vencida o texto de sospecha."
+      "general": "Cuida la seguridad de las cuentas y los datos: las credenciales se guardan en el almacén seguro del sistema operativo, la app se detiene sola si un portal muestra señales de sospecha y las actualizaciones se verifican antes de instalarse.",
+      "tecnica": "Secretos en el llavero del SO (troceados para superar el límite de Windows), API local solo por loopback con token Bearer, OAuth con PKCE y guard RS256, webhooks de Paddle con HMAC y deduplicación, CSP estricta y rate limiting. Actualizador Tauri con firma exigida para la versión anunciada. Topes diarios por plataforma y detención ante 429/403, sesión vencida o texto de sospecha."
     },
     {
       "general": "Está pensado para no fallar a mitad de camino: un problema en una oferta o un portal no corta la búsqueda, y cada corrida deja un registro claro de lo que pasó.",
@@ -105,7 +105,7 @@
     },
     {
       "week": "2026-10-12",
-      "text": "Semana de robustez: la sesión de Magneto se renueva sola, un fallo en una oferta o un portal ya no corta la búsqueda y un corte de internet no gasta intentos de la IA. Cada corrida deja un registro completo, hay aviso de búsquedas programadas perdidas y la integración continua cuenta con un equipo propio de respaldo."
+      "text": "Semana de robustez y entregas: la sesión de Magneto se renueva sola, un fallo en una oferta o un portal ya no corta la búsqueda y cada corrida deja un registro completo. La app de escritorio ahora avisa de versiones nuevas y se actualiza con verificación de firma, y \"Postularse en la página de la empresa\" lleva al formulario sin enviar nada."
     }
   ]
 }

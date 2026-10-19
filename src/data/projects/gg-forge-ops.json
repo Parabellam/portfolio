@@ -136,7 +136,7 @@
     },
     {
       "week": "2026-10-12",
-      "text": "Mantenimiento del inventario de claves de acceso: se retira la de un proveedor de IA que ya se había eliminado, para que el registro refleje solo las credenciales vigentes. Además, el Capataz ya no lanza una revisión automática cuando esta está en pausa y no haría nada."
+      "text": "Los avisos de errores del Capataz ahora indican cuándo el problema viene de Discord y no del código propio. Así los fundadores distinguen de un vistazo una caída externa de un fallo real que hay que corregir."
     }
   ]
 }
