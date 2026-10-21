@@ -1,6 +1,6 @@
 # Portafolio de Stiven Ruiz
 
-**En vivo:** https://portafolio-stiven-ruiz.up.railway.app
+**En vivo:** https://stiven.gg-forge.com
 
 Portafolio que se mantiene solo. La mayoría de mis proyectos viven en repos privados, así que este sitio nunca ve su código: solo recibe datos ya revisados.
 
@@ -13,7 +13,7 @@ Repos privados ──► portfolio-collector (GitHub Actions, privado)
                         src/data/projects/<slug>.json → Pull Request que yo apruebo
                                     │
                                     ▼
-                   Este repo (Astro estático) ──► Railway (Caddy)
+                   Este repo (Astro estático) ──► Cloudflare (archivos estáticos)
 ```
 
 - **Dos niveles de lectura:** cada proyecto se explica para un reclutador (vista *General*) y para un equipo técnico (vista *Técnica*).
@@ -28,4 +28,8 @@ npm install
 npm run dev
 ```
 
-Stack: Astro, TypeScript, CSS sin frameworks, Caddy y Railway.
+Stack: Astro, TypeScript y CSS sin frameworks, servido por Cloudflare.
+
+## Despliegue
+
+Cloudflare Workers Builds compila y publica cada push a `main` (`npm run build` y luego `npx wrangler deploy`), así que los commits del collector salen solos. La configuración está en [`wrangler.jsonc`](wrangler.jsonc) y las cabeceras de seguridad en [`public/_headers`](public/_headers).
