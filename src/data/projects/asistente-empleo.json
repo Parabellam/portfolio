@@ -8,7 +8,7 @@
   "status": "En desarrollo",
   "pitch": {
     "general": "Un asistente que encuentra ofertas que encajan con tu perfil y prepara las postulaciones, pero la última palabra es siempre tuya: tú revisas y apruebas antes de enviar.",
-    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y backend cloud en Railway) que asiste la búsqueda en siete portales, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana antes de cada envío."
+    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y un backend serverless en Cloudflare Workers) que asiste la búsqueda en siete portales, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana antes de cada envío."
   },
   "problem": {
     "general": "Buscar empleo implica revisar decenas de ofertas en varios portales y responder una y otra vez las mismas preguntas en cada formulario. Es repetitivo, consume horas y es fácil postularse a vacantes que no encajan con tu perfil.",
@@ -16,33 +16,33 @@
   },
   "solution": {
     "general": "El asistente busca ofertas en siete portales según tus preferencias, descarta las que no encajan (idioma, modalidad, tecnologías, cargo, salario) y prepara cada postulación con una base de respuestas que aprende de ti. Si no sabe algo te pregunta en vez de inventarlo. En los sitios propios de las empresas puede llenar el formulario paso a paso, pero por defecto se detiene en \"Listo para enviar\" para que lo revises y envíes tú. También recomienda respuestas en pruebas previas al empleo, y tú decides. Funciona en el PC y desde el celular puedes revisar y aprobar.",
-    "tecnica": "Backend NestJS local (SQLite/TypeORM con migraciones) con adaptadores por portal: Playwright para LinkedIn, HTTP + HTML para Computrabajo, APIs JSON para Magneto y Get on Board, y búsqueda en ticjob, Indeed y Upwork. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 7 proveedores de IA y clasificación tipada; las decisiones críticas son código determinista. Un agente para sitios externos usa guardas sin IA (captcha, login, oferta cerrada, salida de dominio) y la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio; un servicio NestJS + PostgreSQL en Railway aporta Auth0, Paddle, sincronización last-write-wins y relay cifrado de punta a punta."
+    "tecnica": "Backend NestJS local (SQLite/TypeORM con migraciones) con adaptadores por portal: Playwright para LinkedIn, HTTP + HTML para Computrabajo, APIs JSON para Magneto y Get on Board, y búsqueda en ticjob, Indeed y Upwork. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 7 proveedores de IA; las decisiones críticas son código determinista. Un agente para sitios externos usa guardas sin IA y la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio. La nube corre en Cloudflare Workers (Hono) con Durable Objects: uno global para cuentas y facturación (Auth0, Paddle) y uno por usuario para equipos, sincronización last-write-wins y relay cifrado de punta a punta."
   },
   "result": {
-    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos. La app de escritorio ya avisa de versiones nuevas y se actualiza de forma segura cuando el usuario lo decide.",
-    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, API cloud) y 5 workflows de GitHub Actions: lint, typecheck, pruebas unitarias, e2e, integración con Postgres efímero, APK firmado y paquete .deb, con runner propio y respaldo en GitHub. Actualizador del escritorio con instaladores firmados y publicación por script verificado. Cerca de 3.900 casos de prueba en más de 230 archivos. Más de 600 commits y cerca de 90 PRs en aproximadamente un mes, con specs y planes de diseño por funcionalidad."
+    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos. La app de escritorio avisa de versiones nuevas y se actualiza de forma segura. El servicio en la nube se rehízo en una plataforma que no exige servidores permanentes y que tiene topes para evitar facturas inesperadas.",
+    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, Worker en la nube) y workflows de GitHub Actions por pieza: lint, typecheck, pruebas unitarias y e2e, pruebas del Worker dentro del runtime real de Workers, APK firmado publicado en la release del tag y paquete .deb, con runner propio y respaldo en GitHub. Actualizador del escritorio con instaladores firmados. Miles de casos de prueba, cerca de 100 PRs y más de 600 commits en unas seis semanas, con specs y planes de diseño por funcionalidad."
   },
-  "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube, app móvil/web, empaquetado de escritorio, CI/CD, despliegue, publicación de versiones y documentación.",
+  "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube (incluida la migración a Cloudflare), app móvil/web, empaquetado de escritorio, CI/CD, despliegue, publicación de versiones y documentación.",
   "highlights": [
     {
       "general": "Construyó solo un producto completo que funciona en escritorio (Windows y Linux), web y Android, con un servicio en la nube para cuentas y suscripciones.",
-      "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust) con actualizador integrado, Expo Router/React Native Paper para web y Android, y una API NestJS + PostgreSQL desplegada en Railway con migraciones versionadas."
+      "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust) con actualizador integrado, Expo Router/React Native Paper para web y Android, y un Worker en Cloudflare con Durable Objects (SQLite) para cuentas, facturación y sincronización."
     },
     {
       "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y, por defecto, se detiene antes de enviar para que la persona revise y apruebe.",
       "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto; el envío automático está apagado y bloqueado hasta la primera revisión humana."
     },
     {
+      "general": "Rediseñó el servicio en la nube de punta a punta en pocos días, pasando a una plataforma sin servidores permanentes y con topes de uso para evitar costos sorpresa, sin romper las apps ya existentes.",
+      "tecnica": "Migración de NestJS + PostgreSQL a Cloudflare Workers (Hono) con dos Durable Objects: Ledger atómico con transactionSync y Account por usuario con WebSocket Hibernation. Diseño previo aprobado, rutas y errores compatibles con los clientes, pruebas dentro de workerd y topes de CPU y subpeticiones."
+    },
+    {
       "general": "El celular funciona como control remoto del PC: inicia búsquedas, muestra el progreso en vivo y permite aprobar postulaciones. También puede conectar las cuentas de los portales viendo la pantalla del PC.",
-      "tecnica": "Sincronización last-write-wins por registro con lápidas, canal WebSocket autenticado y cola de comandos cifrada con ejecución exactamente una vez. El emparejamiento por QR y el relay de pantalla remota (screencast CDP) van cifrados de punta a punta, y el servidor solo reenvía bytes opacos."
+      "tecnica": "Sincronización last-write-wins por registro con lápidas, canal WebSocket autenticado y cola de comandos cifrada (AES-256-GCM en reposo) con ejecución exactamente una vez. El emparejamiento por QR y el relay de pantalla remota (screencast CDP) van cifrados de punta a punta; el servidor solo reenvía bytes opacos."
     },
     {
       "general": "Cuida la seguridad de las cuentas y los datos: las credenciales se guardan en el almacén seguro del sistema operativo, la app se detiene sola si un portal muestra señales de sospecha y las actualizaciones se verifican antes de instalarse.",
-      "tecnica": "Secretos en el llavero del SO (troceados para superar el límite de Windows), API local solo por loopback con token Bearer, OAuth con PKCE y guard RS256, webhooks de Paddle con HMAC y deduplicación, CSP estricta y rate limiting. Actualizador Tauri con firma exigida para la versión anunciada. Topes diarios por plataforma y detención ante 429/403, sesión vencida o texto de sospecha."
-    },
-    {
-      "general": "Está pensado para no fallar a mitad de camino: un problema en una oferta o un portal no corta la búsqueda, y cada corrida deja un registro claro de lo que pasó.",
-      "tecnica": "Aislamiento de fallos por oferta y por plataforma, renovación automática de la sesión de Magneto, reintentos que no gastan intentos de IA ante cortes de red, registro de corridas en archivo y aviso de búsquedas programadas perdidas. Se apoya en una suite de unas 3.900 pruebas y revisiones de PR en cada entrega."
+      "tecnica": "Secretos en el llavero del SO, API local solo por loopback con token Bearer, OAuth con PKCE y verificación de JWT de Auth0 por JWKS, webhooks de Paddle con HMAC y deduplicación, límites por cuenta y por IP, y borrado de cuenta con marca de bloqueo. Actualizador Tauri con firma exigida. Topes diarios por plataforma y detención ante 429/403 o sesión vencida."
     }
   ],
   "skills": [
@@ -55,7 +55,7 @@
     "Desarrollo de apps móviles y de escritorio",
     "Arquitectura de sistemas distribuidos",
     "Seguridad y manejo de credenciales",
-    "Autenticación y pagos",
+    "Computación serverless y control de costos",
     "Pruebas automatizadas",
     "CI/CD y despliegue en la nube"
   ],
@@ -65,7 +65,6 @@
     "NestJS",
     "TypeORM",
     "SQLite",
-    "PostgreSQL",
     "Playwright",
     "Cheerio",
     "React Native",
@@ -76,15 +75,16 @@
     "Tauri v2",
     "Rust",
     "WebSocket",
+    "Cloudflare Workers",
+    "Durable Objects",
+    "Hono",
     "Auth0 (OAuth 2.0 + PKCE)",
     "Paddle",
     "Vercel AI SDK / AI Gateway",
     "APIs de LLM (Anthropic, Gemini, Groq, Mistral)",
     "Zod",
     "Vitest",
-    "GitHub Actions",
-    "Railway",
-    "Docker"
+    "GitHub Actions"
   ],
   "milestones": [
     {
@@ -106,6 +106,10 @@
     {
       "week": "2026-10-12",
       "text": "Semana de robustez y entregas: la sesión de Magneto se renueva sola, un fallo en una oferta o un portal ya no corta la búsqueda y cada corrida deja un registro completo. La app de escritorio ahora avisa de versiones nuevas y se actualiza con verificación de firma, y \"Postularse en la página de la empresa\" lleva al formulario sin enviar nada."
+    },
+    {
+      "week": "2026-10-19",
+      "text": "Se migró el servicio en la nube a una plataforma sin servidores permanentes, con topes de uso para evitar costos inesperados; escritorio y celular ya la usan por defecto. También se publica el APK en las versiones del repositorio y se evaluó y descartó un nuevo portal de empleo por estar limitado a la Unión Europea."
     }
   ]
 }

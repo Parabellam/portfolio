@@ -19,8 +19,8 @@
     "tecnica": "Ocho bots con permisos de Discord mínimos y exactos (solo dos con Administrator, bajo supervisión del Centinela), en siete servicios de Railway desde Docker (el Archivista como cron; el Centinela y el Sabueso comparten proceso para ahorrar memoria, cada uno con su token, permisos y latido, y un supervisor que reinicia solo al que falle). La lógica de decisión es pura y vive aparte de los adaptadores de Discord, así que se testea sin red. La librería gg-forge-kit (versionada por tags) centraliza configuración, logging, latidos, alertas por correo, cliente de IA con respaldo entre tres proveedores y acceso a GitHub mediante una GitHub App con tokens de 1 hora. Los bots se coordinan por listas blancas y órdenes por mención."
   },
   "result": {
-    "general": "La empresa funciona con una oficina digital ordenada y vigilada las 24 horas: los cambios de organización se proponen, revisan y aplican solos con historial completo; los riesgos de seguridad se corrigen en segundos; hay copias de seguridad automáticas y los fundadores reciben avisos útiles en lugar de ruido. Las claves de acceso de los bots son de corta vida y están inventariadas.",
-    "tecnica": "Sistema en producción: el repo de estructura acumula cientos de commits automáticos (exportaciones, planes aplicados e informes) y las aplicaciones registradas se ejecutan sin errores. Unas 11.500 líneas de Python de producción en 7 repos y unas 270 funciones de test con pytest; despliegue continuo en Railway en cada push a main. Los tokens fijos de GitHub y de cuenta de Railway se retiraron en favor de credenciales acotadas."
+    "general": "La empresa funciona con una oficina digital ordenada y vigilada las 24 horas: los cambios de organización se proponen, revisan y aplican solos con historial completo; los riesgos de seguridad se corrigen en segundos; hay copias de seguridad automáticas y los fundadores reciben avisos útiles en lugar de ruido. Las claves de acceso de los bots son de corta vida, están inventariadas y, ante un incidente de la plataforma, se renovaron con guiones preparados para ello.",
+    "tecnica": "Sistema en producción: el repo de estructura acumula cientos de commits automáticos (exportaciones, planes aplicados e informes) y las aplicaciones registradas se ejecutan sin errores. Unas 11.500 líneas de Python de producción en 7 repos y unas 270 funciones de test con pytest; despliegue continuo en Railway en cada push a main. Los tokens fijos de GitHub y de cuenta de Railway se retiraron en favor de credenciales acotadas; ante un incidente de la plataforma se rotaron todas con scripts que verifican que cada token pertenece al bot correcto."
   },
   "role": "Cofundador de GG Forge. Diseño y desarrollo end-to-end del ecosistema: arquitectura, los ocho bots, la librería compartida, tests, configuración de despliegue en Railway, gestión de credenciales, documentación de puesta en marcha y operación en el servidor real. Desarrollo asistido por IA (Claude Code) en parte de los commits, con revisión propia.",
   "highlights": [
@@ -33,8 +33,8 @@
       "tecnica": "Bóveda autorreparable por reconciliación de estado: calcula reparaciones mínimas e idempotentes, revierte primero y consulta el audit log después, aplica cuarentena y retira Administrator no autorizado; anti-nuke con ventana deslizante. El Sabueso (26 reglas tipo gitleaks más entropía, nunca guarda el secreto) corre en el mismo proceso con supervisor que reinicia solo al bot caído."
     },
     {
-      "general": "Capataz: convierte cientos de errores repetidos en un solo aviso claro con botones, recuerda vencimientos, lleva los gastos y el standup diario, avisa de las claves de acceso que van a caducar y lanza a su hora los procesos programados que la plataforma se saltaba.",
-      "tecnica": "Observabilidad sobre la API GraphQL de Railway: agrupa trazas por huella normalizada, detecta regresiones y picos, censura secretos en logs y crea issues en GitHub. Incluye inventario de credenciales sin valores con avisos de caducidad y revisión semanal, y «disparos»: lanza workflows de GitHub por workflow_dispatch en su horario, una sola vez por minuto aunque el bot se reinicie."
+      "general": "Capataz: convierte cientos de errores repetidos en un solo aviso claro con botones, tanto de los servicios como de la web de la empresa. Recuerda vencimientos, lleva los gastos y el standup diario, avisa de las claves que van a caducar y lanza a su hora los procesos programados que la plataforma se saltaba.",
+      "tecnica": "Observabilidad sobre la API GraphQL de Railway y la de Workers Observability de Cloudflare: agrupa trazas por huella normalizada, detecta regresiones y picos, censura secretos en logs y crea issues en GitHub. Incluye inventario de credenciales sin valores con avisos de caducidad y «disparos»: lanza workflows de GitHub por workflow_dispatch en su horario, una sola vez por minuto aunque el bot se reinicie."
     },
     {
       "general": "Seguridad y privacidad desde el diseño: cada bot tiene solo los permisos que necesita, las claves de acceso a GitHub son temporales y limitadas a lo imprescindible, las copias de seguridad están cifradas de forma que ni el propio bot puede leerlas y el asistente nunca revela lo que quien pregunta no puede ver.",
@@ -46,14 +46,14 @@
     "Diseño de arquitectura de microservicios",
     "Seguridad de la información y mínimo privilegio",
     "Gestión de credenciales y secretos",
+    "Respuesta a incidentes y rotación de claves",
     "Infraestructura como código",
     "Integración de APIs de terceros",
     "IA aplicada a documentación propia",
     "Monitorización y observabilidad",
     "Copias de seguridad y recuperación ante desastres",
     "Testing automatizado",
-    "Despliegue en la nube con contenedores",
-    "Documentación técnica y de operación"
+    "Despliegue en la nube con contenedores"
   ],
   "stack": [
     "Python 3.12",
@@ -66,6 +66,7 @@
     "boto3 (Cloudflare R2, API S3)",
     "GitHub REST API y GitHub Apps",
     "Railway GraphQL API",
+    "Cloudflare Workers Observability API",
     "Anthropic Claude / Google Gemini / OpenAI SDKs",
     "BM25",
     "Docker",
@@ -82,8 +83,8 @@
     },
     {
       "name": "Servidor (estructura)",
-      "general": "Guarda la foto del servidor, cómo debe quedar y el resultado de cada cambio, con historial completo de quién cambió qué y cuándo.",
-      "tecnica": "Repositorio de estado declarativo (estado actual, deseado, tareas, cambios manuales conservados e informe de la última aplicación) escrito por el Arquitecto y usado como registro de auditoría vía git."
+      "general": "Guarda la foto del servidor, cómo debe quedar y el resultado de cada cambio, con historial completo. Ahora incluye foros de trabajo y un espacio de guías para construir productos.",
+      "tecnica": "Repositorio de estado declarativo (estado actual, deseado, tareas, cambios manuales e informe de la última aplicación) escrito por el Arquitecto, usado como auditoría vía git. Incluye foros, canales de archivo en solo lectura y scripts de rotación de credenciales."
     },
     {
       "name": "Centinela",
@@ -102,8 +103,8 @@
     },
     {
       "name": "Capataz",
-      "general": "Vigila errores y consumo de los sistemas, recuerda vencimientos y pagos, lleva gastos, avisa de claves que caducan, lanza tareas programadas y organiza el standup diario.",
-      "tecnica": "Agrupación de errores de Railway por huella con regresiones y picos, alertas de CPU/memoria/disco, issues en GitHub, inventario de credenciales con avisos de caducidad, disparo de workflows en su horario, vencimientos, gastos multimoneda y standup por MD."
+      "general": "Vigila errores y consumo de los sistemas y de la web de la empresa, recuerda vencimientos y pagos, lleva gastos, avisa de claves que caducan, lanza tareas programadas y organiza el standup diario.",
+      "tecnica": "Agrupación de errores de Railway y Cloudflare Workers por huella con regresiones y picos, alertas de CPU/memoria/disco, issues en GitHub, inventario de credenciales, disparo de workflows, vencimientos, gastos multimoneda y standup."
     },
     {
       "name": "Portero",
@@ -113,12 +114,12 @@
     {
       "name": "Oráculo",
       "general": "Responde preguntas sobre los productos de la empresa usando su documentación y citando de dónde sale cada respuesta.",
-      "tecnica": "RAG ligero: sincroniza incrementalmente las specs desde GitHub (ahora con la GitHub App, solo lectura), busca con BM25 en Python puro, filtra por permisos de canal, responde con IA solo con el contexto recuperado y mide aciertos con botones."
+      "tecnica": "RAG ligero: sincroniza incrementalmente las specs desde GitHub (con la GitHub App, solo lectura), busca con BM25 en Python puro, filtra por permisos de canal, responde con IA solo con el contexto recuperado y mide aciertos con botones."
     },
     {
       "name": "GG Forge Kit",
       "general": "Una caja de herramientas común que usan todos los bots para configurarse, avisar si algo falla, acceder a GitHub con claves temporales y hablar con servicios de IA.",
-      "tecnica": "Librería Python pública versionada por tags: configuración validada, logging, latido a healthchecks.io, alertas por correo, GitHubAuth con tokens de GitHub App de 1 h, y cliente de IA con respaldo entre tres proveedores. Los SDK de IA se cargan al primer uso (unos 50 MB menos al arrancar)."
+      "tecnica": "Librería Python pública versionada por tags: configuración validada, logging, latido a healthchecks.io, alertas por correo, GitHubAuth con tokens de GitHub App de 1 h, y cliente de IA con respaldo entre tres proveedores. Los SDK de IA se cargan al primer uso."
     }
   ],
   "milestones": [
@@ -137,6 +138,10 @@
     {
       "week": "2026-10-12",
       "text": "Los avisos de errores del Capataz ahora indican cuándo el problema viene de Discord y no del código propio. Así los fundadores distinguen de un vistazo una caída externa de un fallo real que hay que corregir."
+    },
+    {
+      "week": "2026-10-19",
+      "text": "El Capataz empieza a vigilar también la web de la empresa y avisa de sus errores igual que los de los servicios, sin molestar con el ruido de la plataforma. Tras un incidente en la plataforma de despliegue se renovaron todas las claves de los bots con guiones que comprueban cada una. El servidor ganó foros de trabajo y un espacio de guías para construir productos."
     }
   ]
 }

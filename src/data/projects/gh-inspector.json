@@ -91,6 +91,10 @@
     {
       "week": "2026-10-12",
       "text": "La auditoría y las pruebas automáticas pueden correr en un equipo propio cuando está disponible. El bot deja de lanzar horas que no harían nada, para no gastar minutos de ejecución, y la sonda de consumo pasó a un modelo más barato."
+    },
+    {
+      "week": "2026-10-19",
+      "text": "Se reorganizó la comunicación del bot en Discord. Cada tarea (ideas, mejoras y seguridad) tiene su propio foro, con una publicación para los proyectos que revisa y otra para sus informes, así la lista de proyectos no se pierde entre los informes semanales."
     }
   ]
 }
