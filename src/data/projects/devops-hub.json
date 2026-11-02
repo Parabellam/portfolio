@@ -136,6 +136,10 @@
     {
       "week": "2026-09-21",
       "text": "Auditoría de seguridad completa: se corrigen fallos, se actualizan dependencias y se añade una batería de pruebas automáticas que protege las operaciones delicadas."
+    },
+    {
+      "week": "2026-10-26",
+      "text": "Se corrigió un error en los despliegues con un clic: uno de los servicios de monitoreo no se asociaba bien con su proceso de publicación automática. Ahora se publica correctamente."
     }
   ]
 }
