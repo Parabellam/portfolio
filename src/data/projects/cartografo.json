@@ -88,6 +88,10 @@
     {
       "week": "2026-10-05",
       "text": "Se redujo el coste y el consumo del servicio: la suscripción de Claude pasa a ser la primera opción, se actualizaron los modelos de IA y el bot arranca con el código ya compilado, ocupando unos 40 MB menos de memoria. Además se retiró un proveedor de respaldo sin crédito."
+    },
+    {
+      "week": "2026-10-26",
+      "text": "El producto pasa a llamarse «Specs de Producto», un nombre que describe mejor lo que hace. Además, el bot reconoce como una sola sección de tareas los foros de tareas a corto y a largo plazo."
     }
   ]
 }

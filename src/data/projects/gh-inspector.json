@@ -95,6 +95,10 @@
     {
       "week": "2026-10-19",
       "text": "Se reorganizó la comunicación del bot en Discord. Cada tarea (ideas, mejoras y seguridad) tiene su propio foro, con una publicación para los proyectos que revisa y otra para sus informes, así la lista de proyectos no se pierde entre los informes semanales."
+    },
+    {
+      "week": "2026-10-26",
+      "text": "Se cambió el nombre visible del bot a «Auditor de Repos» en su documentación, en las etiquetas de las propuestas y en los avisos de error, para que el nombre refleje mejor lo que hace."
     }
   ]
 }
