@@ -125,9 +125,9 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
     ctx.fillStyle = g;
     ctx.fill();
     ctx.restore();
-    // Vetas de lava más oscura que se mueven por dentro.
+    // Vetas de lava más oscura que se mueven por dentro. El trazado actual no forma parte del
+    // estado que guarda save/restore, así que sigue siendo el contorno de la masa.
     ctx.save();
-    blobPath(t, ry * 0.8);
     ctx.clip();
     for (let i = 0; i < 2; i++) {
       const sx = c + Math.sin(t * (0.4 + i * 0.3) + i * 2) * R * 0.55;
