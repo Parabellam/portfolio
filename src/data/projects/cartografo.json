@@ -92,6 +92,10 @@
     {
       "week": "2026-10-26",
       "text": "El producto pasa a llamarse «Specs de Producto», un nombre que describe mejor lo que hace. Además, el bot reconoce como una sola sección de tareas los foros de tareas a corto y a largo plazo."
+    },
+    {
+      "week": "2026-11-02",
+      "text": "Se redujo de nuevo el consumo de memoria del servicio en la nube: el bot ya no guarda en memoria los mensajes que lee de Discord, lo que abarata su funcionamiento continuo. Se añadió una prueba automática que lo verifica."
     }
   ]
 }

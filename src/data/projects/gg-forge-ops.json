@@ -7,42 +7,42 @@
   "category": "Automatización e IA",
   "status": "En producción",
   "pitch": {
-    "general": "Un equipo de ocho asistentes automáticos que llevan la oficina digital de una empresa en Discord: organizan el espacio de trabajo, lo protegen, hacen copias de seguridad, vigilan los sistemas, recuerdan pagos, reciben las solicitudes de nuevos proyectos, dan la bienvenida al personal y a los clientes y responden dudas sobre los productos.",
-    "tecnica": "Ecosistema de 8 bots Python (discord.py, asyncio) desplegados en 7 servicios de Railway con Docker, que cubren infraestructura como código para Discord, seguridad y anti-nuke, detección de secretos, respaldos cifrados, observabilidad de producción, onboarding/offboarding con alta de productos desde la web y un asistente RAG, apoyados en una librería compartida versionada."
+    "general": "Un equipo de ocho asistentes automáticos que llevan la oficina digital de una empresa en Discord: organizan el espacio de trabajo, lo protegen, hacen copias de seguridad, vigilan los sistemas, recuerdan pagos, reciben solicitudes de proyectos, reciben a clientes y personal en su idioma y responden dudas sobre los productos.",
+    "tecnica": "Ecosistema de 8 bots Python (discord.py, asyncio) en 7 servicios de Railway con Docker: infraestructura como código para Discord, anti-nuke, detección de secretos, respaldos cifrados, observabilidad, onboarding multilingüe con portal de clientes y alta de productos desde la web, y un asistente RAG, sobre una librería compartida versionada."
   },
   "problem": {
-    "general": "Una empresa pequeña que usa Discord como oficina acumula trabajo manual y riesgos: permisos mal puestos que dejan ver información sensible, contraseñas pegadas por error en el chat, fallos de producción que nadie ve a tiempo, pagos que vencen sin aviso, solicitudes de clientes que se pierden en un correo y personas que entran o salen sin un control ordenado. Si el servidor se borra o se ataca, no hay copia de seguridad.",
-    "tecnica": "Discord no ofrece control de versiones de su estructura ni de sus permisos, ni protección frente a cambios maliciosos o masivos, ni detección de credenciales filtradas, ni respaldos. Las alertas de la plataforma de despliegue llegan dispersas y sin agrupar, y los procesos de altas, bajas, vencimientos, standups y alta de nuevos productos dependen de la memoria de los fundadores. Con varios bots, además, las credenciales se multiplican y caducan sin control."
+    "general": "Una empresa pequeña que usa Discord como oficina acumula trabajo manual y riesgos: permisos mal puestos que dejan ver información sensible, contraseñas pegadas por error, fallos de producción que nadie ve a tiempo, pagos que vencen sin aviso, solicitudes de clientes que se pierden y personas que entran o salen sin un control ordenado. Si el servidor se borra o se ataca, no hay copia de seguridad.",
+    "tecnica": "Discord no ofrece control de versiones de su estructura ni de sus permisos, ni protección frente a cambios masivos, ni detección de credenciales filtradas, ni respaldos. Las alertas de despliegue llegan dispersas, y las altas, bajas, vencimientos, standups, el acceso de clientes y el alta de productos dependen de la memoria de los fundadores. Con varios bots, además, las credenciales se multiplican y caducan sin control."
   },
   "solution": {
-    "general": "Cada tarea la hace un bot especializado con un nombre que describe su oficio: Estructura del Servidor mantiene la organización a partir de un archivo revisable; Zonas Protegidas frena ataques y cuida las zonas privadas; Detector de Credenciales retira claves pegadas en el chat; Copias de Seguridad cifra respaldos; Operaciones vigila errores, gastos, vencimientos y el standup; Accesos y Clientes gestiona altas, bajas, portal de clientes y solicitudes de la web; Preguntas de Producto responde citando la documentación. Cada bot tiene solo los permisos que necesita.",
-    "tecnica": "Ocho bots con permisos de Discord mínimos y exactos (solo dos con Administrator, bajo supervisión del bot de protección), en siete servicios de Railway desde Docker (las copias como cron; protección y detector de credenciales comparten proceso para ahorrar memoria, cada uno con su token, permisos y latido, y un supervisor que reinicia solo al que falle). La lógica de decisión es pura y vive aparte de los adaptadores de Discord, así que se testea sin red. La librería gg-forge-kit centraliza configuración, alertas, cliente de IA con respaldo entre tres proveedores y acceso a GitHub con tokens de 1 hora. Los bots se coordinan por listas blancas y órdenes por mención."
+    "general": "Cada tarea la hace un bot especializado con un nombre que describe su oficio: Estructura del Servidor mantiene la organización desde un archivo revisable; Zonas Protegidas frena ataques; Detector de Credenciales retira claves pegadas; Copias de Seguridad cifra respaldos; Operaciones vigila errores, gastos y vencimientos; Accesos y Clientes recibe a cada persona y da a cada cliente su espacio; Preguntas de Producto responde citando la documentación. Cada bot tiene solo los permisos que necesita.",
+    "tecnica": "Ocho bots con permisos de Discord mínimos y exactos (solo dos con Administrator, bajo supervisión del bot de protección), en siete servicios de Railway desde Docker. Protección y detector de credenciales comparten proceso con token, permisos y latido propios y un supervisor. La lógica de decisión es pura y está separada de los adaptadores de Discord, por lo que se testea sin red. La librería gg-forge-kit centraliza configuración, alertas, cliente de IA con respaldo entre tres proveedores y acceso a GitHub con tokens de 1 hora."
   },
   "result": {
-    "general": "La empresa funciona con una oficina digital ordenada y vigilada las 24 horas: los cambios de organización se proponen, revisan y aplican solos con historial completo, y cada solicitud de la web llega a Discord y se convierte en un producto con su espacio de trabajo con un botón. Los riesgos de seguridad se corrigen en segundos, hay copias de seguridad automáticas y los fundadores reciben avisos útiles en lugar de ruido. Las claves de los bots son de corta vida y están inventariadas.",
-    "tecnica": "Sistema en producción: el repo de estructura acumula cientos de commits automáticos (exportaciones, planes aplicados e informes) y las aplicaciones registradas se ejecutan sin errores. Unas 11.500 líneas de Python de producción en 7 repos y unas 270 funciones de test con pytest; despliegue continuo en Railway en cada push a main. Los tokens fijos de GitHub y de cuenta de Railway se retiraron en favor de credenciales acotadas; ante un incidente de la plataforma se rotaron todas con scripts que verifican que cada token pertenece al bot correcto."
+    "general": "La empresa funciona con una oficina digital ordenada y vigilada las 24 horas: los cambios de organización se proponen, revisan y aplican con historial, cada persona nueva pasa por una sala privada en su idioma y cada cliente tiene su propio foro. Los riesgos de seguridad se corrigen en segundos, hay copias automáticas y los fundadores reciben avisos útiles en lugar de ruido.",
+    "tecnica": "Sistema en producción: el repo de estructura acumula cientos de commits automáticos y las aplicaciones registradas se ejecutan sin errores. Más de 600 funciones de test con pytest repartidas en 7 repos (el onboarding y el portal de clientes concentran más de 250); despliegue continuo en Railway en cada push a main. Los tokens fijos de GitHub y de Railway se retiraron en favor de credenciales acotadas, y tras un incidente se rotaron todas con scripts que verifican cada token."
   },
-  "role": "Cofundador de GG Forge. Diseño y desarrollo end-to-end del ecosistema: arquitectura, los ocho bots, la librería compartida, tests, configuración de despliegue en Railway, gestión de credenciales, documentación de puesta en marcha y operación en el servidor real. Desarrollo asistido por IA (Claude Code) en parte de los commits, con revisión propia.",
+  "role": "Cofundador de GG Forge. Diseño y desarrollo end-to-end del ecosistema: arquitectura, los ocho bots, la librería compartida, tests, despliegue en Railway, gestión de credenciales, documentación y operación en el servidor real. Desarrollo asistido por IA (Claude Code) en parte de los commits, con revisión propia en rondas sucesivas de revisión y corrección.",
   "highlights": [
     {
-      "general": "Estructura del Servidor: la organización completa del servidor (roles, canales, permisos y quién tiene qué rol) vive en un archivo. Se propone un cambio, el bot enseña qué hará, un fundador lo aprueba con un botón y queda un historial de quién cambió qué y cuándo. Las zonas privadas ya no se copian a ese historial.",
-      "tecnica": "Infraestructura como código para Discord con ciclo export → plan → apply: un planificador puro y determinista compara el YAML deseado con la foto actual y genera operaciones mínimas (sin id se crea, lo ausente no se toca, borrar es explícito); la exportación es estable para que git log sea la auditoría y omite el contenido de categorías privadas; detecta deriva, ofrece «Deshacer» y ejecuta tareas idempotentes, como renombrar una publicación sin tocar sus mensajes."
+      "general": "Accesos y Clientes: cada persona que llega recibe una sala privada, elige idioma (español, inglés o portugués) y acepta las normas. Un fundador la aprueba como cliente o como equipo; los clientes obtienen su foro propio con la conversación copiada, y las bajas generan una lista de revisión para no dejar accesos olvidados.",
+      "tecnica": "Máquina de estados persistida en SQLite: sala privada con permisos por miembro, textos i18n es/en/pt, copia de la sala al foro del cliente por trozos con Reintentar o Conservar sala, un candado por persona y reconciliación tras reinicios (llegadas y salidas con el bot apagado, tarjetas obsoletas, permisos de foros rehechos al conectar). Actas de baja paginadas y marcado atómico de puntos."
     },
     {
-      "general": "Zonas Protegidas: si alguien intenta abrir una zona privada del servidor, el bot lo deshace en menos de un segundo, aísla al autor y avisa. También frena borrados o expulsiones masivas. Comparte servicio con el Detector de Credenciales, que retira al instante las claves pegadas en el chat.",
-      "tecnica": "Bóveda autorreparable por reconciliación de estado: calcula reparaciones mínimas e idempotentes, revierte primero y consulta el audit log después, aplica cuarentena y retira Administrator no autorizado; anti-nuke con ventana deslizante y tolerancia a entradas de auditoría sin objetivo. El detector (26 reglas tipo gitleaks más entropía, nunca guarda el secreto) corre en el mismo proceso con supervisor que reinicia solo al bot caído."
+      "general": "Estructura del Servidor: la organización completa del servidor (roles, canales, permisos) vive en un archivo. Se propone un cambio, el bot enseña qué hará, un fundador lo aprueba con un botón y queda historial de quién cambió qué. Las zonas privadas no se copian a ese historial, ni siquiera el nombre de sus canales.",
+      "tecnica": "Infraestructura como código con ciclo export → plan → apply: planificador puro y determinista que genera operaciones mínimas (sin id se crea, lo ausente no se toca, borrar es explícito); exportación estable que omite categorías privadas y oculta sus nombres en logs e informes; detección de deriva, «Deshacer» y tareas idempotentes, como editar el primer mensaje de una publicación sin tocar el resto."
     },
     {
-      "general": "Operaciones: convierte cientos de errores repetidos en un solo aviso claro con botones, y ahora los errores de cada producto van a su propio espacio de logs. Recuerda vencimientos con su responsable, lleva los gastos y el standup diario, avisa de las claves que van a caducar y lanza a su hora los procesos programados.",
-      "tecnica": "Observabilidad sobre la API GraphQL de Railway y la de Workers Observability de Cloudflare: agrupa trazas por huella normalizada, detecta regresiones y picos, reensambla los campos de logs JSON estructurados, censura secretos y enruta por producto a su hilo de logs. Incluye inventario de credenciales sin valores, gastos con responsable y «disparos» de workflows por workflow_dispatch, una vez por minuto aunque el bot se reinicie."
+      "general": "Zonas Protegidas y Detector de Credenciales: si alguien abre una zona privada, el bot lo deshace en menos de un segundo, aísla al autor y avisa; también frena borrados o expulsiones masivas. El detector retira al instante claves pegadas en el chat, incluidas las de los espacios privados de clientes.",
+      "tecnica": "Bóveda autorreparable por reconciliación idempotente: revierte primero y consulta el audit log después, aplica cuarentena y retira Administrator no autorizado; anti-nuke con ventana deslizante. El detector (26 reglas tipo gitleaks más entropía, nunca guarda el secreto) corre en el mismo proceso con supervisor y accede a salas y foros de clientes solo con permisos de lectura."
     },
     {
-      "general": "De la solicitud al producto: cada envío del formulario de la web aparece en Discord como una solicitud. Con un botón, un fundador la convierte en el espacio de trabajo de un producto, con su plantilla de publicaciones y, si es para un cliente, su espacio privado.",
-      "tecnica": "Un webhook publica la solicitud en un foro y Accesos y Clientes añade botones persistentes. La conversión es en dos fases (commit del foro en el YAML de estructura, espera a que exista, commit de la plantilla de tareas), con estado en SQLite para retomar tras un reinicio. El correo del visitante no sale del foro de solicitudes; la web no depende del bot."
+      "general": "Operaciones: convierte cientos de errores repetidos en un solo aviso claro con botones, enviado al espacio de logs de cada producto. Recuerda vencimientos con su responsable, lleva gastos y standup diario, avisa de claves que caducan y lanza procesos programados.",
+      "tecnica": "Observabilidad sobre las APIs de Railway y Cloudflare Workers Observability: agrupa trazas por huella normalizada, detecta regresiones y picos, censura secretos, ignora ruido conocido de la plataforma y enruta por producto. Incluye inventario de credenciales sin valores, gastos con responsable y disparos de workflows una vez por minuto aunque el bot se reinicie."
     },
     {
-      "general": "Seguridad y privacidad desde el diseño: cada bot tiene solo los permisos que necesita, las claves de acceso a GitHub son temporales y limitadas a lo imprescindible, las copias de seguridad están cifradas de forma que ni el propio bot puede leerlas y el asistente nunca revela lo que quien pregunta no puede ver.",
-      "tecnica": "Mínimo privilegio con bitmasks exactos y listas blancas. Migración de tokens fijos a una GitHub App: tokens de 1 h que se renuevan solos, limitados por bot a sus repos y permisos, con respaldo a token fijo. Copias con cifrado asimétrico age, Cloudflare R2 y retención de 30 días; Preguntas de Producto con BM25 en Python puro filtrado por permisos de canal, citas obligatorias y control de gasto de tokens."
+      "general": "Seguridad y privacidad desde el diseño: cada bot tiene solo los permisos que necesita, las claves de GitHub son temporales, las copias están cifradas de forma que ni el propio bot puede leerlas, los espacios privados de clientes no se filtran a los registros y el asistente nunca revela lo que quien pregunta no puede ver.",
+      "tecnica": "Mínimo privilegio con bitmasks exactos y listas blancas; nunca se asignan roles con permisos de administración o moderación. GitHub App con tokens de 1 h limitados por bot, con respaldo a token fijo. Copias con cifrado asimétrico age, Cloudflare R2 y retención de 30 días; Preguntas de Producto con BM25 en Python puro filtrado por permisos de canal y citas obligatorias."
     }
   ],
   "skills": [
@@ -53,11 +53,11 @@
     "Respuesta a incidentes y rotación de claves",
     "Infraestructura como código",
     "Integración de APIs de terceros",
+    "Experiencia de cliente y onboarding multilingüe",
     "IA aplicada a documentación propia",
     "Monitorización y observabilidad",
     "Copias de seguridad y recuperación ante desastres",
-    "Testing automatizado",
-    "Despliegue en la nube con contenedores"
+    "Testing automatizado"
   ],
   "stack": [
     "Python 3.12",
@@ -83,12 +83,12 @@
     {
       "name": "Estructura del Servidor (Arquitecto)",
       "general": "Mantiene la organización del servidor (roles, canales y permisos) a partir de un archivo que se revisa y aprueba antes de aplicarse.",
-      "tecnica": "Infraestructura como código para Discord: exportación estable a YAML en git sin el contenido de categorías privadas, planificador puro de operaciones mínimas, aprobación por botón, detección de deriva y tareas idempotentes."
+      "tecnica": "Infraestructura como código para Discord: exportación estable a YAML en git sin contenido ni nombres de canales privados, planificador puro de operaciones mínimas, aprobación por botón, detección de deriva y tareas idempotentes (incluida editar una publicación)."
     },
     {
       "name": "Servidor (estructura)",
       "general": "Guarda la foto del servidor, cómo debe quedar y el resultado de cada cambio, con historial completo. Incluye foros por producto, un foro de solicitudes y guías para construir productos.",
-      "tecnica": "Repositorio de estado declarativo (actual, deseado, tareas, cambios manuales e informe de la última aplicación) escrito por Estructura del Servidor y usado como auditoría vía git. Incluye foros, plantilla de producto, canales de archivo y scripts de rotación de credenciales."
+      "tecnica": "Repositorio de estado declarativo (actual, deseado, tareas, cambios manuales e informe de la última aplicación) escrito por Estructura del Servidor y usado como auditoría vía git. Incluye foros, plantilla de producto, guías y scripts de rotación de credenciales."
     },
     {
       "name": "Zonas Protegidas (Centinela)",
@@ -97,33 +97,33 @@
     },
     {
       "name": "Detector de Credenciales (Sabueso)",
-      "general": "Detecta contraseñas y claves pegadas en el chat, las retira y acompaña a la persona hasta que las cambia. Comparte servicio con Zonas Protegidas.",
+      "general": "Detecta contraseñas y claves pegadas en el chat, incluidos los espacios privados de clientes, las retira y acompaña a la persona hasta que las cambia. Comparte servicio con Zonas Protegidas.",
       "tecnica": "Detector puro con 26 reglas tipo gitleaks más entropía sobre texto, embeds y adjuntos, censura de secretos e incidentes persistentes hasta la rotación. Vive en el repo de Zonas Protegidas y corre en su proceso, con token, permisos y latido propios."
     },
     {
       "name": "Copias de Seguridad (Archivista)",
-      "general": "Hace copias de seguridad automáticas y cifradas del servidor, legibles por personas y útiles para reconstruirlo si se borra.",
-      "tecnica": "Cron en Railway que exporta canales, hilos, adjuntos y estructura vía REST, empaqueta en tar.gz, cifra con age, sube a Cloudflare R2 con retención de 30 días y alerta por Discord, correo y healthchecks.io si falla."
+      "general": "Hace copias automáticas y cifradas del servidor, incluidos los foros de clientes, legibles por personas y útiles para reconstruirlo si se borra.",
+      "tecnica": "Cron en Railway que exporta canales, hilos, adjuntos y estructura vía REST con acceso de solo lectura, empaqueta en tar.gz, cifra con age, sube a Cloudflare R2 con retención de 30 días y alerta por Discord, correo y healthchecks.io si falla."
     },
     {
       "name": "Operaciones (Capataz)",
-      "general": "Vigila errores y consumo de los sistemas y de la web, manda cada error al espacio de su producto, recuerda vencimientos y pagos con su responsable, lleva gastos, avisa de claves que caducan y organiza el standup.",
-      "tecnica": "Agrupación de errores de Railway y Cloudflare Workers por huella, con regresiones, picos y enrutado por producto; alertas de CPU/memoria/disco, issues en GitHub, inventario de credenciales, disparo de workflows, gastos multimoneda, órdenes de texto y standup."
+      "general": "Vigila errores y consumo de los sistemas y de la web, manda cada error al espacio de su producto, recuerda vencimientos y pagos, lleva gastos, avisa de claves que caducan y organiza el standup.",
+      "tecnica": "Agrupación de errores de Railway y Cloudflare Workers por huella, con regresiones, picos, filtro de ruido de plataforma y enrutado por producto; alertas de recursos, issues en GitHub, inventario de credenciales, disparo de workflows, gastos multimoneda y standup."
     },
     {
       "name": "Accesos y Clientes (Portero)",
-      "general": "Gestiona quién entra y quién sale, da a cada cliente su espacio privado y convierte las solicitudes de la web en espacios de trabajo de producto con un botón.",
-      "tecnica": "Onboarding con aprobación por menú y perfiles de roles sin permisos peligrosos, offboarding con registro de accesos externos, invitaciones de un solo uso, portal de clientes y conversión de solicitudes web en producto en dos fases con estado persistente."
+      "general": "Recibe a cada persona en una sala privada y en su idioma, gestiona altas y bajas, da a cada cliente su foro propio con avances y solicitudes, y convierte las solicitudes de la web en productos con un botón.",
+      "tecnica": "Onboarding es/en/pt con estado en SQLite, aprobación por tarjeta, perfiles de roles sin permisos peligrosos, foros de cliente con permisos por miembro, comandos de cliente, actas de baja, reconciliación tras reinicios y conversión de solicitudes web en dos fases."
     },
     {
       "name": "Preguntas de Producto (Oráculo)",
       "general": "Responde preguntas sobre los productos de la empresa usando su documentación y citando de dónde sale cada respuesta.",
-      "tecnica": "RAG ligero: sincroniza incrementalmente las specs desde GitHub (con la GitHub App, solo lectura), busca con BM25 en Python puro, filtra por permisos de canal, responde con IA solo con el contexto recuperado y mide aciertos con botones."
+      "tecnica": "RAG ligero: sincroniza incrementalmente las specs desde GitHub (GitHub App, solo lectura), busca con BM25 en Python puro, filtra por permisos de canal, responde con IA solo con el contexto recuperado y mide aciertos con botones."
     },
     {
       "name": "GG Forge Kit",
       "general": "Una caja de herramientas común que usan todos los bots para configurarse, avisar si algo falla, acceder a GitHub con claves temporales y hablar con servicios de IA.",
-      "tecnica": "Librería Python pública versionada por tags: configuración validada, logging, latido a healthchecks.io, alertas por correo, GitHubAuth con tokens de GitHub App de 1 h y cliente de IA con respaldo entre tres proveedores. Los SDK de IA se cargan al primer uso."
+      "tecnica": "Librería Python pública versionada por tags: configuración validada, logging, latido a healthchecks.io, alertas por correo, GitHubAuth con tokens de GitHub App de 1 h y cliente de IA con respaldo entre tres proveedores cargado al primer uso."
     }
   ],
   "milestones": [
@@ -149,7 +149,11 @@
     },
     {
       "week": "2026-10-26",
-      "text": "Las solicitudes del formulario de la web llegan a Discord y se convierten en un producto con su espacio de trabajo con un solo botón. Los errores de cada producto van a su propio espacio de logs, las zonas privadas dejan de copiarse al historial y los bots pasan a tener nombres que describen su función."
+      "text": "Las solicitudes de la web se convierten en productos con un botón y los errores de cada producto van a su propio espacio. Además, quien llega al servidor recibe una sala privada de bienvenida en español, inglés o portugués, y cada cliente aprobado obtiene su foro propio con la conversación copiada."
+    },
+    {
+      "week": "2026-11-02",
+      "text": "Los nombres de los canales privados dejan de aparecer en registros e informes. Se pueden editar publicaciones ya creadas sin tocar el resto, se pausan avisos de producto y se añaden guías de diseño para el equipo. El Capataz ignora un aviso conocido de la plataforma que generaba ruido."
     }
   ]
 }
