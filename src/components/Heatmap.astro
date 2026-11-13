@@ -34,12 +34,16 @@ const months = columns.map((col, i) => {
   return monthOf(i + 2) === month ? formatMonth(col.cells[0].date) : '';
 });
 
+// Las líneas de hitos son iguales para los 7 días de la semana: se arman una sola vez.
+const notesByWeek = new Map<string, string>();
+for (const [week, list] of byWeek) {
+  notesByWeek.set(week, list.map((m) => (m.project ? `${m.project}: ${m.text}` : m.text)).join('\n'));
+}
+
 function tipFor(date: string, level: number, monday: string) {
-  const lines = [`${formatLongDate(date)} · ${levelLabel(level)}`];
-  for (const m of byWeek.get(monday) ?? []) {
-    lines.push(m.project ? `${m.project}: ${m.text}` : m.text);
-  }
-  return lines.join('\n');
+  const head = `${formatLongDate(date)} · ${levelLabel(level)}`;
+  const notes = notesByWeek.get(monday);
+  return notes === undefined ? head : `${head}\n${notes}`;
 }
 ---
 
