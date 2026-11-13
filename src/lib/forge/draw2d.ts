@@ -155,13 +155,21 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
       // para que arrastrar y seguir el cursor se sientan igual que en la versión WebGL.
       const project = projector(-rx, ry, -0.1);
       const pts = V.map((p) => project(p));
-      const edges = EDGES.map(([a, b]) => ({ a: pts[a], b: pts[b], z: (pts[a].z + pts[b].z) / 2 }));
-      // Aristas de atrás, luego la masa, luego las de adelante.
-      edges.filter((e) => e.z < 0).forEach((e) => drawEdge(e.a, e.b));
-      pts.filter((p) => p.z < 0).forEach(drawCorner);
+      // Aristas de atrás, luego la masa, luego las de adelante. Se separan en una sola pasada.
+      const frontEdges: [P2, P2][] = [];
+      for (const [a, b] of EDGES) {
+        const z = (pts[a].z + pts[b].z) / 2;
+        if (z < 0) drawEdge(pts[a], pts[b]);
+        else if (z >= 0) frontEdges.push([pts[a], pts[b]]);
+      }
+      const frontPts: P2[] = [];
+      for (const p of pts) {
+        if (p.z < 0) drawCorner(p);
+        else if (p.z >= 0) frontPts.push(p);
+      }
       drawBlob(time, ry);
-      edges.filter((e) => e.z >= 0).forEach((e) => drawEdge(e.a, e.b));
-      pts.filter((p) => p.z >= 0).forEach(drawCorner);
+      for (const [a, b] of frontEdges) drawEdge(a, b);
+      for (const p of frontPts) drawCorner(p);
     },
   };
 }
