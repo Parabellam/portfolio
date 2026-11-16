@@ -96,6 +96,10 @@
     {
       "week": "2026-11-02",
       "text": "Se redujo de nuevo el consumo de memoria del servicio en la nube: el bot ya no guarda en memoria los mensajes que lee de Discord, lo que abarata su funcionamiento continuo. Se añadió una prueba automática que lo verifica."
+    },
+    {
+      "week": "2026-11-09",
+      "text": "Se activó la ejecución automática de las pruebas en cada cambio propuesto, se actualizaron librerías para corregir vulnerabilidades conocidas y se ajustó la gestión de memoria del servicio en la nube para reducir aún más su consumo."
     }
   ]
 }

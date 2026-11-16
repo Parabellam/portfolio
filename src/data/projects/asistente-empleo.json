@@ -110,6 +110,10 @@
     {
       "week": "2026-10-19",
       "text": "Se migró el servicio en la nube a una plataforma sin servidores permanentes, con topes de uso para evitar costos inesperados; escritorio y celular ya la usan por defecto. También se publica el APK en las versiones del repositorio y se evaluó y descartó un nuevo portal de empleo por estar limitado a la Unión Europea."
+    },
+    {
+      "week": "2026-11-09",
+      "text": "Pulido del producto: aviso cuando vence la sesión de la cuenta, estado manual de cada postulación y resultado de la última corrida, y un historial con enlace a la oferta, filtro por portal y búsqueda. Nuevas versiones del escritorio con instalador más liviano y dependencias actualizadas por seguridad."
     }
   ]
 }
