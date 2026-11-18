@@ -37,6 +37,12 @@ export function projectDays(slug: string): DayMap {
   return projects[slug]?.days ?? {};
 }
 
+/** Actividad de los repos sin ficha («Otros trabajos») de una fuente: 'GG Forge' o 'Personal'. */
+export function otherDays(source: string): DayMap {
+  const others = (activity as { others?: Record<string, { days: DayMap } | undefined> }).others;
+  return others?.[source]?.days ?? {};
+}
+
 export function lastActivity(slug: string): string | null {
   const projects = activity.projects as Record<string, { lastActivity: string | null } | undefined>;
   return projects[slug]?.lastActivity ?? null;
