@@ -9,7 +9,7 @@
 
 <script>
   import { createCanvasRenderer } from '../lib/forge/canvas2d';
-  import type { ForgeRenderer } from '../lib/forge/types';
+  import { BLEED, type ForgeRenderer } from '../lib/forge/types';
 
   const REST_X = -0.42;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -58,7 +58,7 @@
     const view = await createRenderer(host);
     host.dataset.renderer = view.kind;
 
-    const resize = () => view.resize(host.clientWidth);
+    const resize = () => view.resize(Math.round(host.clientWidth * BLEED));
     new ResizeObserver(resize).observe(host);
     resize();
 
@@ -164,11 +164,14 @@
   .forge.dragging {
     cursor: grabbing;
   }
+  /* El lienzo sobresale de la caja (BLEED = 1,24 → 12 % por lado) para que las esquinas no se
+     recorten al girar. No recibe clics: el arrastre se toma en la caja y no tapa el texto de al lado. */
   .forge :global(canvas) {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    inset: -12%;
+    width: 124%;
+    height: 124%;
+    pointer-events: none;
     animation: forge-in 0.6s ease-out;
   }
   @keyframes forge-in {

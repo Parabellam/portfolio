@@ -23,7 +23,7 @@ import type { Texture } from 'three';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-import type { ForgeRenderer } from './types';
+import { BLEED, type ForgeRenderer } from './types';
 
 // Ruido simplex 3D (Ashima Arts / Stefan Gustavson, licencia MIT).
 const NOISE = /* glsl */ `
@@ -143,7 +143,10 @@ export function createWebGLRenderer(host: HTMLElement): ForgeRenderer {
   host.appendChild(renderer.domElement);
 
   const scene = new Scene();
-  const camera = new PerspectiveCamera(32, 1, 0.1, 50);
+  // 32° para la caja del cubo; el lienzo es BLEED veces más grande, así que se abre el ángulo en la
+  // misma proporción y el cubo se ve del mismo tamaño, con aire para las esquinas.
+  const fov = (2 * Math.atan(Math.tan((16 * Math.PI) / 180) * BLEED) * 180) / Math.PI;
+  const camera = new PerspectiveCamera(fov, 1, 0.1, 50);
   camera.position.set(0, 0, 7.3);
 
   const group = new Group();
