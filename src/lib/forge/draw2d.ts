@@ -1,6 +1,8 @@
 // Dibujo en Canvas 2D del cubo de alambre con la masa de lava. Sirve tanto en la página como
 // dentro de un Worker (OffscreenCanvas), por eso no toca el DOM.
 
+import { BLEED } from './types';
+
 type P3 = [number, number, number];
 type P2 = { x: number; y: number; z: number };
 
@@ -35,7 +37,7 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
     const cosY = Math.cos(ry), sinY = Math.sin(ry);
     const cosZ = Math.cos(rz), sinZ = Math.sin(rz);
     const c = size / 2;
-    const k = size * 0.25;
+    const k = (size / BLEED) * 0.25;
     return ([x0, y0, z0]: P3): P2 => {
       let x = x0 * cosY + z0 * sinY;
       let z = -x0 * sinY + z0 * cosY;
@@ -51,7 +53,7 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
 
   // Contorno de la masa: radio que ondula con varias frecuencias (lóbulos grandes y lisos).
   const blobPath = (t: number, spin: number) => {
-    const R = size * 0.2;
+    const R = (size / BLEED) * 0.2;
     const n = 120;
     ctx.beginPath();
     for (let i = 0; i <= n; i++) {
@@ -108,11 +110,11 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
 
   const drawBlob = (t: number, ry: number) => {
     const c = size / 2;
-    const R = size * 0.2;
+    const R = (size / BLEED) * 0.2;
     // Brillo exterior y relleno: centro rojo que se desplaza, bordes naranja y amarillo.
     ctx.save();
     ctx.shadowColor = 'rgba(255, 90, 31, 0.55)';
-    ctx.shadowBlur = size * 0.09;
+    ctx.shadowBlur = (size / BLEED) * 0.09;
     blobPath(t, ry * 0.8);
     const ox = Math.sin(t * 0.6) * R * 0.18;
     const oy = Math.cos(t * 0.5) * R * 0.14;
