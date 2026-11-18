@@ -6,7 +6,7 @@ import ForgeCube from '../components/ForgeCube.astro';
 import ProjectsScroll from '../components/ProjectsScroll.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import site from '../data/site.json';
-import { activeDays, mergeDays, projectDays, type Milestone } from '../lib/activity';
+import { activeDays, mergeDays, otherDays, projectDays, type Milestone } from '../lib/activity';
 
 const projects = (await getCollection('projects')).sort(
   (a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.order - b.data.order,
@@ -15,8 +15,18 @@ const projects = (await getCollection('projects')).sort(
 const main = projects.filter((p) => p.data.tier === 'principal');
 const others = projects.filter((p) => p.data.tier === 'menor');
 
-const allDays = mergeDays(projects.map((p) => projectDays(p.id)));
+// El mapa cuenta todo: los proyectos con ficha y los «Otros trabajos» (repos sin ficha).
+const SOURCES = ['GG Forge', 'Personal'] as const;
+const daysBySource = Object.fromEntries(
+  SOURCES.map((s) => [
+    s,
+    mergeDays([...projects.filter((p) => p.data.source === s).map((p) => projectDays(p.id)), otherDays(s)]),
+  ]),
+) as Record<(typeof SOURCES)[number], ReturnType<typeof mergeDays>>;
+const allDays = mergeDays(SOURCES.map((s) => daysBySource[s]));
 const totalActive = activeDays(allDays);
+const activeGgForge = activeDays(daysBySource['GG Forge']);
+const activePersonal = activeDays(daysBySource.Personal);
 const inProduction = projects.filter((p) => p.data.status === 'En producción').length;
 const milestones: Milestone[] = projects.flatMap((p) =>
   p.data.milestones.map((m) => ({ ...m, project: p.data.name })),
@@ -52,7 +62,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     </div>
     <dl class="stats">
       <div class="stat">
-        <dt>días trabajados en proyectos personales</dt>
+        <dt>días con avance en el último año</dt>
         <dd class="stat-value hot">{totalActive}</dd>
       </div>
       <div class="stat">
@@ -86,13 +96,18 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   <section class="wrap section" id="actividad">
     <div class="section-head">
-      <h2>Actividad en mis proyectos personales</h2>
+      <h2>Actividad en mis proyectos</h2>
       <p class="muted">
-        Cada cuadro es un día del último año: cuanto más intenso el color, más avance hubo. Se actualiza solo cada semana.
+        Cada cuadro es un día del último año: cuanto más intenso el color, más avance hubo. Incluye los proyectos de
+        arriba y otros trabajos sin ficha. Se actualiza solo cada semana.
+      </p>
+      <p class="split">
+        <span><strong>{activeGgForge}</strong> días en GG Forge</span>
+        <span><strong>{activePersonal}</strong> días en proyectos personales</span>
       </p>
     </div>
     <div class="panel">
-      <Heatmap days={allDays} milestones={milestones} label={`${totalActive} días trabajados en proyectos personales en el último año`} />
+      <Heatmap days={allDays} milestones={milestones} label={`${totalActive} días con avance en mis proyectos en el último año`} />
     </div>
   </section>
 </Base>
@@ -209,6 +224,18 @@ const pad = (n: number) => String(n).padStart(2, '0');
     .stat-value {
       font-size: 2.25rem;
     }
+  }
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0.75rem 0 0;
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+  .split strong {
+    color: var(--ink);
+    font-weight: 600;
   }
   .others {
     display: grid;
