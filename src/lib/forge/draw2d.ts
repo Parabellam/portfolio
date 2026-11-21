@@ -16,6 +16,18 @@ for (let a = 0; a < 8; a++) {
   }
 }
 
+// Ángulos del contorno de la masa con su coseno y seno: no cambian entre cuadros.
+const BLOB_STEPS = 120;
+const BLOB_A = new Float64Array(BLOB_STEPS + 1);
+const BLOB_COS = new Float64Array(BLOB_STEPS + 1);
+const BLOB_SIN = new Float64Array(BLOB_STEPS + 1);
+for (let i = 0; i <= BLOB_STEPS; i++) {
+  const a = (i / BLOB_STEPS) * Math.PI * 2;
+  BLOB_A[i] = a;
+  BLOB_COS[i] = Math.cos(a);
+  BLOB_SIN[i] = Math.sin(a);
+}
+
 export type AnyCanvas = HTMLCanvasElement | OffscreenCanvas;
 
 export interface Drawer2D {
@@ -54,11 +66,9 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
   // Contorno de la masa: radio que ondula con varias frecuencias (lóbulos grandes y lisos).
   const blobPath = (t: number, spin: number) => {
     const R = (size / BLEED) * 0.2;
-    const n = 120;
     ctx.beginPath();
-    for (let i = 0; i <= n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      const q = a + spin;
+    for (let i = 0; i <= BLOB_STEPS; i++) {
+      const q = BLOB_A[i] + spin;
       const r =
         R *
         (1 +
@@ -66,8 +76,8 @@ export function createDrawer2D(canvas: AnyCanvas): Drawer2D {
           0.09 * Math.sin(2 * q - t * 0.7 + 1.3) +
           0.05 * Math.sin(5 * q + t * 1.3 + 0.4) +
           0.03 * Math.sin(7 * q - t * 1.7));
-      const x = size / 2 + Math.cos(a) * r;
-      const y = size / 2 + Math.sin(a) * r;
+      const x = size / 2 + BLOB_COS[i] * r;
+      const y = size / 2 + BLOB_SIN[i] * r;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
