@@ -103,6 +103,10 @@
     {
       "week": "2026-11-09",
       "text": "Se reforzó la seguridad del propio bot: se actualizaron las librerías en las que se apoya y se limitó el tamaño del informe que genera la IA, para que un resultado anómalo o demasiado grande no pueda dañar el proceso."
+    },
+    {
+      "week": "2026-11-16",
+      "text": "La auditoría de seguridad aprendió a buscar los tipos de fallo que el analizador de código de GitHub detectó en los proyectos y que el bot había pasado por alto. También se corrigieron esas alertas en el propio bot y se mejoró la comprobación de proyectos que usan otros gestores de paquetes."
     }
   ]
 }

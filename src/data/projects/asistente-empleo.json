@@ -8,33 +8,33 @@
   "status": "En desarrollo",
   "pitch": {
     "general": "Un asistente que encuentra ofertas que encajan con tu perfil y prepara las postulaciones, pero la última palabra es siempre tuya: tú revisas y apruebas antes de enviar.",
-    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y un backend serverless en Cloudflare Workers) que asiste la búsqueda en siete portales, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana antes de cada envío."
+    "tecnica": "Plataforma multi-app en TypeScript (NestJS + Playwright, Expo/React Native, Tauri y un backend serverless en Cloudflare Workers con planes de pago) que asiste la búsqueda en siete portales, el filtrado y la preparación de postulaciones con IA multiproveedor, con revisión humana antes de cada envío."
   },
   "problem": {
     "general": "Buscar empleo implica revisar decenas de ofertas en varios portales y responder una y otra vez las mismas preguntas en cada formulario. Es repetitivo, consume horas y es fácil postularse a vacantes que no encajan con tu perfil.",
     "tecnica": "Cada portal (LinkedIn, Computrabajo, Magneto, Get on Board, ticjob, Indeed, Upwork) tiene su propio flujo, formato y API no documentada, y los formularios de las empresas son heterogéneos y a veces hostiles. Asistirlo exige manejar sesiones reales con seguridad, no inventar respuestas y no poner en riesgo la cuenta del usuario."
   },
   "solution": {
-    "general": "El asistente busca ofertas en siete portales según tus preferencias, descarta las que no encajan (idioma, modalidad, tecnologías, cargo, salario) y prepara cada postulación con una base de respuestas que aprende de ti. Si no sabe algo te pregunta en vez de inventarlo. En los sitios propios de las empresas puede llenar el formulario paso a paso, pero por defecto se detiene en \"Listo para enviar\" para que lo revises y envíes tú. También recomienda respuestas en pruebas previas al empleo, y tú decides. Funciona en el PC y desde el celular puedes revisar y aprobar.",
-    "tecnica": "Backend NestJS local (SQLite/TypeORM con migraciones) con adaptadores por portal: Playwright para LinkedIn, HTTP + HTML para Computrabajo, APIs JSON para Magneto y Get on Board, y búsqueda en ticjob, Indeed y Upwork. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 7 proveedores de IA; las decisiones críticas son código determinista. Un agente para sitios externos usa guardas sin IA y la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio. La nube corre en Cloudflare Workers (Hono) con Durable Objects: uno global para cuentas y facturación (Auth0, Paddle) y uno por usuario para equipos, sincronización last-write-wins y relay cifrado de punta a punta."
+    "general": "El asistente busca ofertas en siete portales según tus preferencias, descarta las que no encajan (idioma, modalidad, tecnologías, cargo, salario) y prepara cada postulación con una base de respuestas que aprende de ti. Si no sabe algo te pregunta en vez de inventarlo. En los sitios de las empresas puede llenar el formulario paso a paso, pero por defecto se detiene en \"Listo para enviar\" para que lo revises y envíes tú. Funciona en el PC y desde el celular puedes revisar y aprobar. Se ofrece con dos planes de suscripción: Basic y Pro.",
+    "tecnica": "Backend NestJS local (SQLite/TypeORM) con adaptadores por portal: Playwright, HTTP + HTML y APIs JSON según el sitio. Autocompletado en tres capas (exacto, semántico, IA redactora limitada al perfil real) con fallback entre 9 proveedores de IA con llave propia del usuario, que debe configurar al menos una. El agente para sitios externos usa guardas sin IA; la IA solo elige el siguiente botón, nunca los valores. Tauri v2 empaqueta el escritorio. La nube corre en Cloudflare Workers (Hono) con Durable Objects: cuentas y facturación (Auth0, Paddle, planes Basic y Pro), sincronización y relay cifrado de punta a punta."
   },
   "result": {
-    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos. La app de escritorio avisa de versiones nuevas y se actualiza de forma segura. El servicio en la nube se rehízo en una plataforma que no exige servidores permanentes y que tiene topes para evitar facturas inesperadas.",
-    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, Worker en la nube) y workflows de GitHub Actions por pieza: lint, typecheck, pruebas unitarias y e2e, pruebas del Worker dentro del runtime real de Workers, APK firmado publicado en la release del tag y paquete .deb, con runner propio y respaldo en GitHub. Actualizador del escritorio con instaladores firmados. Miles de casos de prueba, cerca de 100 PRs y más de 600 commits en unas seis semanas, con specs y planes de diseño por funcionalidad."
+    "general": "El usuario pasa de llenar formularios a mano a revisar y aprobar postulaciones ya preparadas, desde el PC o el celular. Los filtros evitan perder tiempo en vacantes que no encajan y las protecciones reducen el riesgo de bloqueos. El producto ya tiene modelo comercial: un plan básico para el escritorio y uno Pro con control desde el celular y un modelo de evaluación incluido con tope mensual para controlar costos. Hoy los cobros funcionan en modo de pruebas.",
+    "tecnica": "Monorepo con 4 aplicaciones (backend local, app Expo web/Android, envoltorio Tauri para Windows y Linux, Worker en la nube) y workflows de GitHub Actions por pieza: lint, typecheck, pruebas unitarias y e2e, pruebas del Worker en el runtime real de Workers, APK firmado y paquete .deb. Actualizador del escritorio con instaladores firmados. Control de acceso por plan en nube y clientes, y cuota mensual de evaluaciones por cuenta Pro. Miles de casos de prueba y más de 600 commits en pocas semanas."
   },
-  "role": "Diseño y desarrollo end-to-end: producto, arquitectura, backend local y en la nube (incluida la migración a Cloudflare), app móvil/web, empaquetado de escritorio, CI/CD, despliegue, publicación de versiones y documentación.",
+  "role": "Diseño y desarrollo end-to-end: producto, modelo de planes y suscripciones, arquitectura, backend local y en la nube (incluida la migración a Cloudflare), app móvil/web, empaquetado de escritorio, CI/CD, publicación de versiones y documentación.",
   "highlights": [
     {
-      "general": "Construyó solo un producto completo que funciona en escritorio (Windows y Linux), web y Android, con un servicio en la nube para cuentas y suscripciones.",
+      "general": "Construyó solo un producto completo que funciona en escritorio (Windows y Linux), web y Android, con un servicio en la nube para cuentas y suscripciones de pago.",
       "tecnica": "Cuatro aplicaciones coordinadas en un monorepo: NestJS local empaquetado como sidecar en Tauri v2 (Rust) con actualizador integrado, Expo Router/React Native Paper para web y Android, y un Worker en Cloudflare con Durable Objects (SQLite) para cuentas, facturación y sincronización."
     },
     {
-      "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y, por defecto, se detiene antes de enviar para que la persona revise y apruebe.",
-      "tecnica": "Autocompletado en tres capas con fallback entre 7 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto; el envío automático está apagado y bloqueado hasta la primera revisión humana."
+      "general": "Convirtió el proyecto en un producto con modelo de negocio: dos planes de suscripción, funciones exclusivas del plan superior y un tope mensual de uso del servicio de IA incluido para evitar costos sorpresa.",
+      "tecnica": "Planes Basic y Pro sobre Paddle, resueltos por el identificador de precio en el Worker; la app de escritorio exige plan, el control remoto y las búsquedas programadas son de Pro, y la evaluación incluida lleva cuota mensual por cuenta con 403 para Basic."
     },
     {
-      "general": "Rediseñó el servicio en la nube de punta a punta en pocos días, pasando a una plataforma sin servidores permanentes y con topes de uso para evitar costos sorpresa, sin romper las apps ya existentes.",
-      "tecnica": "Migración de NestJS + PostgreSQL a Cloudflare Workers (Hono) con dos Durable Objects: Ledger atómico con transactionSync y Account por usuario con WebSocket Hibernation. Diseño previo aprobado, rutas y errores compatibles con los clientes, pruebas dentro de workerd y topes de CPU y subpeticiones."
+      "general": "Usa inteligencia artificial de forma responsable: nunca inventa habilidades que el usuario no tiene y, por defecto, se detiene antes de enviar para que la persona revise y apruebe.",
+      "tecnica": "Autocompletado en tres capas con fallback entre 9 proveedores de IA ordenables por el usuario, clasificación tipada sobre claves que define el código y mitigación de prompt injection. El agente de sitios externos usa guardas deterministas y un modo \"Listo para enviar\" por defecto; el envío automático está bloqueado hasta la primera revisión humana."
     },
     {
       "general": "El celular funciona como control remoto del PC: inicia búsquedas, muestra el progreso en vivo y permite aprobar postulaciones. También puede conectar las cuentas de los portales viendo la pantalla del PC.",
@@ -42,7 +42,7 @@
     },
     {
       "general": "Cuida la seguridad de las cuentas y los datos: las credenciales se guardan en el almacén seguro del sistema operativo, la app se detiene sola si un portal muestra señales de sospecha y las actualizaciones se verifican antes de instalarse.",
-      "tecnica": "Secretos en el llavero del SO, API local solo por loopback con token Bearer, OAuth con PKCE y verificación de JWT de Auth0 por JWKS, webhooks de Paddle con HMAC y deduplicación, límites por cuenta y por IP, y borrado de cuenta con marca de bloqueo. Actualizador Tauri con firma exigida. Topes diarios por plataforma y detención ante 429/403 o sesión vencida."
+      "tecnica": "Secretos en el llavero del SO, API local solo por loopback con token Bearer, OAuth con PKCE y JWT de Auth0 verificado por JWKS, webhooks de Paddle con HMAC y deduplicación, límites por cuenta y por IP, y corrección de alertas de CodeQL (ReDoS). Actualizador Tauri con firma exigida y topes diarios por plataforma."
     }
   ],
   "skills": [
@@ -55,9 +55,9 @@
     "Desarrollo de apps móviles y de escritorio",
     "Arquitectura de sistemas distribuidos",
     "Seguridad y manejo de credenciales",
+    "Modelos de suscripción y facturación",
     "Computación serverless y control de costos",
-    "Pruebas automatizadas",
-    "CI/CD y despliegue en la nube"
+    "Pruebas automatizadas y CI/CD"
   ],
   "stack": [
     "TypeScript",
@@ -81,7 +81,6 @@
     "Auth0 (OAuth 2.0 + PKCE)",
     "Paddle",
     "Vercel AI SDK / AI Gateway",
-    "APIs de LLM (Anthropic, Gemini, Groq, Mistral)",
     "Zod",
     "Vitest",
     "GitHub Actions"
@@ -114,6 +113,10 @@
     {
       "week": "2026-11-09",
       "text": "Pulido del producto: aviso cuando vence la sesión de la cuenta, estado manual de cada postulación y resultado de la última corrida, y un historial con enlace a la oferta, filtro por portal y búsqueda. Nuevas versiones del escritorio con instalador más liviano y dependencias actualizadas por seguridad."
+    },
+    {
+      "week": "2026-11-16",
+      "text": "El producto adquiere modelo comercial: planes de suscripción Basic y Pro, con el evaluador de ofertas incluido en Pro con tope mensual. Se sumaron dos proveedores de IA, la búsqueda exige al menos una clave de IA, se corrigieron alertas de seguridad y se publicó la versión 0.2.8 del escritorio con una guía de entrega a nuevos usuarios."
     }
   ]
 }
