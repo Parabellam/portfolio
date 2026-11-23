@@ -140,6 +140,10 @@
     {
       "week": "2026-10-26",
       "text": "Se corrigió un error en los despliegues con un clic: uno de los servicios de monitoreo no se asociaba bien con su proceso de publicación automática. Ahora se publica correctamente."
+    },
+    {
+      "week": "2026-11-16",
+      "text": "El selector de entorno de la app ahora se mantiene sincronizado con el entorno activo del equipo, aunque se cambie desde otra herramienta, y al abrir la app espera a detectarlo antes de usar el último guardado, lo que reduce el riesgo de actuar sobre el entorno equivocado."
     }
   ]
 }

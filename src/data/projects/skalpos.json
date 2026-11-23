@@ -7,22 +7,22 @@
   "category": "Web y apps",
   "status": "En desarrollo",
   "pitch": {
-    "general": "Un producto de GG Forge: sistema de punto de venta para bares en Colombia, en web y Android, que cubre desde las mesas y el cobro hasta la factura electrónica.",
-    "tecnica": "POS multi-bar con servidor en Go y contrato OpenAPI, web y Android en React con Capacitor, tiempo real por SSE, modo sin internet y facturación electrónica conectada directo a la autoridad tributaria."
+    "general": "Un producto de GG Forge: sistema de punto de venta para bares en Colombia, en web y Android, que cubre desde las mesas y el cobro hasta la factura electrónica, la carta por QR y la música de la casa.",
+    "tecnica": "POS multi-bar con servidor en Go y contrato OpenAPI, web y Android en React con Capacitor, tiempo real por SSE, modo sin internet, facturación electrónica directa a la autoridad tributaria y cobro con pasarelas intercambiables."
   },
   "problem": {
     "general": "Los bares trabajan de noche, con mucha rotación, cuentas abiertas, pagos repartidos entre varias personas, inventario de licores por medidas y obligaciones de facturación electrónica. Muchas herramientas son genéricas, dependen del internet o resultan caras para su tamaño.",
-    "tecnica": "Hay que modelar jornadas nocturnas que cruzan la medianoche, cuentas con pagos mixtos y abonos, inventario por receta y documentos fiscales con firma y plazos. Todo debe funcionar con varios dispositivos a la vez y con cortes de internet."
+    "tecnica": "Hay que modelar jornadas nocturnas que cruzan la medianoche, cuentas con pagos mixtos y abonos, inventario por receta y documentos fiscales con firma y plazos. Todo debe funcionar con varios dispositivos a la vez, con cortes de internet y con tráfico público abierto a clientes."
   },
   "solution": {
-    "general": "Una aplicación para el personal con mesas en vivo, pedidos a barra o cocina, cobro con pagos mixtos y parciales, cierre de caja, insumos por receta, reservas con anticipo y reportes. Los clientes escanean un QR para ver la carta, pedir, pagar desde el celular y proponer canciones. Está en español, inglés y portugués.",
-    "tecnica": "Un binario Go (Huma v2, pgx, sqlc, goose, PostgreSQL) sirve el API, el SSE, la carta QR renderizada en servidor y la web embebida. Los eventos viajan por LISTEN/NOTIFY, así que funciona con varias instancias. La web usa React 19, TanStack y Tailwind, con cola offline en IndexedDB y service worker. Los tipos de la web se generan desde el OpenAPI."
+    "general": "Una aplicación para el personal con mesas en vivo, pedidos a barra o cocina, cobro con pagos mixtos y parciales, cierre de caja obligatorio para vender, insumos por receta, reservas con anticipo y reportes. Los clientes escanean un QR para ver la carta, pedir, pagar su parte o toda la cuenta y proponer canciones. Incluye soporte con el equipo de GG Forge dentro del panel. Está en español, inglés y portugués.",
+    "tecnica": "Un binario Go (Huma v2, pgx, sqlc, goose, PostgreSQL) sirve el API, el SSE, la carta QR renderizada en servidor y la web embebida. Los eventos viajan por LISTEN/NOTIFY, así que funciona con varias instancias. La web usa React 19, TanStack y Tailwind, con cola offline en IndexedDB y service worker. Los tipos se generan desde el OpenAPI y el cobro de suscripciones va detrás de una interfaz de pasarelas intercambiables."
   },
   "result": {
-    "general": "El producto está avanzado y ya tiene portada pública, términos del servicio, factura electrónica con su nota de corrección, entrega de la factura por correo y copias de seguridad cifradas. Se prueba en un entorno de pruebas previo al lanzamiento comercial.",
-    "tecnica": "Hay CI con tests del servidor con detector de carreras, govulncheck, Biome, Knip, Vitest, tests de propiedades (rapid y fast-check) y E2E con Playwright repartidos en paralelo. Copia nocturna cifrada de la base, archivo de XML fiscales con bloqueo de retención y despliegue en contenedor único. No se publican métricas de uso."
+    "general": "El producto está avanzado: tiene portada pública, términos del servicio, factura electrónica con nota de corrección, entrega por correo, copias de seguridad cifradas, soporte integrado y cobro automático de la suscripción. Se prueba en un entorno previo al lanzamiento comercial.",
+    "tecnica": "Hay CI con tests del servidor con detector de carreras, govulncheck, Biome, Knip, Vitest, tests de propiedades (rapid y fast-check) y E2E con Playwright en paralelo. Copia nocturna cifrada de la base, archivo de XML fiscales con bloqueo de retención y despliegue en contenedor único. Se hizo una auditoría de seguridad con correcciones y mediciones de rendimiento con un año de datos y red lenta. No se publican métricas de uso."
   },
-  "role": "Desarrollo integral del producto en GG Forge: decisiones de arquitectura (documentadas en ADR), backend en Go, web y app Android, integración de facturación electrónica, infraestructura, CI y pruebas automatizadas.",
+  "role": "Desarrollo integral del producto en GG Forge: decisiones de arquitectura (documentadas en ADR), backend en Go, web y app Android, extensión de navegador, integración de facturación electrónica y de cobros, infraestructura, seguridad, CI y pruebas automatizadas.",
   "highlights": [
     {
       "general": "Factura electrónica de venta y documentos equivalentes, con notas de corrección y entrega al comprador por correo, hechos con conexión directa a la autoridad tributaria.",
@@ -33,16 +33,16 @@
       "tecnica": "SSE por bar sobre LISTEN/NOTIFY de Postgres para multi-instancia, recarga por mesa, cola de operaciones en IndexedDB con idempotency keys y reenvío al reconectar."
     },
     {
-      "general": "La carta por QR permite a los clientes pedir, pagar desde el celular, unirse a la mesa y sugerir canciones, con control del bar sobre quién participa.",
-      "tecnica": "Carta renderizada en servidor con tiempo real por SSE, sesión de mesa con dueño y solicitudes de unión, bloqueo de dispositivos, límites y caché, y cola de canciones con reproductor y programación por franja."
+      "general": "La carta por QR permite al cliente pedir varias veces, pagar su parte o toda la cuenta desde el celular, unirse a la mesa y sugerir canciones. Además, lo agotado desaparece solo según los insumos.",
+      "tecnica": "Carta renderizada en servidor con SSE, sesión de mesa con dueño y solicitudes de unión, bloqueo de dispositivos, límites y caché, y disponibilidad derivada del inventario por receta con aviso en el POS."
     },
     {
-      "general": "Producto completo en tres idiomas, con asistente de configuración y diseño pensado para celular.",
-      "tecnica": "i18n en web, servidor, carta QR, avisos push y alertas (es/en/pt), mensajes de error según el idioma del cliente y contrato OpenAPI verificado en CI."
+      "general": "Música de la casa para el bar: cola de canciones con posición exacta, reglas para que ningún cliente espere demasiado, recorte de intros y finales sin música, y una extensión de navegador para agregar videos con un clic.",
+      "tecnica": "Cola por bloques con canción puente y priorización con tope de espera, cortes automáticos con copia local semanal de datos públicos, vista previa que verifica la reproducción y extensión de navegador distribuible sin tienda."
     },
     {
-      "general": "Calidad cuidada: muchas pruebas automáticas y decisiones técnicas registradas por escrito.",
-      "tecnica": "Tests de propiedades, E2E en Docker, tests estables sin dependencia de orden, 10 ADR, migraciones versionadas y actualización de Go por vulnerabilidades en la biblioteca estándar."
+      "general": "Producto cuidado en seguridad y calidad: protección contra bots en los registros, auditoría con correcciones, muchas pruebas automáticas y decisiones técnicas registradas por escrito, en tres idiomas.",
+      "tecnica": "Verificación anti-bots en formularios públicos, correcciones de auditoría, tests de propiedades, E2E en Docker, 10 ADR, migraciones versionadas con fases expand/contract, i18n es/en/pt y contrato OpenAPI verificado en CI."
     }
   ],
   "skills": [
@@ -51,7 +51,9 @@
     "Desarrollo backend",
     "Aplicaciones web y móviles",
     "Facturación electrónica",
+    "Integración de pagos",
     "Sistemas en tiempo real",
+    "Seguridad de aplicaciones",
     "Internacionalización",
     "Pruebas automatizadas",
     "Integración continua y despliegue",
@@ -70,6 +72,7 @@
     "TanStack Router y Query",
     "Tailwind CSS",
     "Capacitor (Android)",
+    "Extensión de navegador",
     "Server-Sent Events",
     "IndexedDB y service worker",
     "Playwright",
@@ -82,18 +85,23 @@
   "components": [
     {
       "name": "Servidor",
-      "general": "Cerebro del sistema: guarda la información, calcula las cuentas, emite los documentos fiscales y avisa en vivo a todos los equipos.",
-      "tecnica": "Binario Go con API tipado, SSE, despachador fiscal, carta QR en plantillas y web embebida con go:embed."
+      "general": "Cerebro del sistema: guarda la información, calcula las cuentas, emite los documentos fiscales, procesa cobros y avisa en vivo a todos los equipos.",
+      "tecnica": "Binario Go con API tipado, SSE, despachador fiscal, pasarelas de cobro intercambiables, carta QR en plantillas y web embebida con go:embed."
     },
     {
       "name": "Web y app Android",
-      "general": "Aplicación para el personal del bar: mesas, cobros, caja, insumos, reportes y ajustes. Funciona en navegador y en Android.",
+      "general": "Aplicación para el personal del bar: mesas, cobros, caja, insumos, canciones, soporte, reportes y ajustes. Funciona en navegador y en Android.",
       "tecnica": "React con TypeScript estricto y Capacitor, con modo sin conexión y tipos generados desde el contrato del servidor."
     },
     {
       "name": "Carta QR",
       "general": "Página que ve el cliente en su celular: carta, pedidos, cuenta, pago y canciones.",
       "tecnica": "HTML del servidor con tiempo real por SSE, pestañas, sesión de mesa y soporte de tres idiomas."
+    },
+    {
+      "name": "Extensión de navegador",
+      "general": "Complemento que permite al personal agregar videos a la cola de canciones con un botón, sin copiar enlaces.",
+      "tecnica": "Extensión que inyecta un botón en cada miniatura y se instala por descarga directa, sin pasar por la tienda."
     },
     {
       "name": "Pruebas E2E",
@@ -112,7 +120,7 @@
     },
     {
       "week": "2026-11-16",
-      "text": "Los clientes ya pueden pagar desde el celular. La carta QR pasó a pestañas, con sesión de mesa y tiempo real, y el bar puede bloquear dispositivos. También llegaron la música de la casa por franjas, los Ajustes en grupos y varias mejoras de velocidad."
+      "text": "Los clientes pueden pagar toda la cuenta o solo lo suyo desde la carta del QR, y el bar sabe al instante qué se agotó según sus insumos. Se sumaron soporte con el equipo dentro del panel, música con mejores reglas de cola, extensión de navegador, cobro automático de la suscripción y una auditoría de seguridad."
     }
   ]
 }
